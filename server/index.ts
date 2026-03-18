@@ -182,7 +182,7 @@ app.post('/api/auth/login', async (req, res) => {
  */
 app.post('/api/register', async (req, res) => {
   try {
-    const { nome, cnpj, endereco, telefone, email, observacao, usuario, senha } = req.body;
+    const { nome, cnpj, endereco, telefone, email, observacao, cep, inscricao_estadual, contato, usuario, senha } = req.body;
 
     if (!nome || !cnpj || !usuario || !senha) {
       res.status(400).json({ message: 'Campos obrigatórios: nome, cnpj, usuario, senha' });
@@ -209,10 +209,11 @@ app.post('/api/register', async (req, res) => {
 
     await masterDb.execute({
       sql: `INSERT INTO empresas
-              (nome, cnpj, endereco, telefone, email, observacao, banco_dados, usuario_admin, senha_admin)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              (nome, cnpj, endereco, telefone, email, observacao, cep, inscricao_estadual, contato, banco_dados, usuario_admin, senha_admin)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [nome, cnpjLimpo, endereco || null, telefone || null, email || null,
-             observacao || null, bancoDados, usuario, senhaHash],
+             observacao || null, cep || null, inscricao_estadual || null, contato || null,
+             bancoDados, usuario, senhaHash],
     });
 
     res.status(201).json({ message: 'Empresa cadastrada com sucesso!', cnpj: cnpjLimpo });
@@ -230,7 +231,7 @@ app.post('/api/register', async (req, res) => {
 app.get('/api/admin/empresas', auth, soRoot, async (_req, res) => {
   try {
     const rows = await masterDb.execute(
-      'SELECT id, nome, cnpj, endereco, telefone, email, data_cadastro, observacao, ativo, banco_dados, usuario_admin FROM empresas ORDER BY nome ASC'
+      'SELECT id, nome, cnpj, endereco, telefone, email, data_cadastro, observacao, ativo, banco_dados, usuario_admin, cep, inscricao_estadual, contato FROM empresas ORDER BY nome ASC'
     );
     res.json(rows.rows);
   } catch {
@@ -241,7 +242,7 @@ app.get('/api/admin/empresas', auth, soRoot, async (_req, res) => {
 // Cadastra nova empresa (pelo Root)
 app.post('/api/admin/empresas', auth, soRoot, async (req, res) => {
   try {
-    const { nome, cnpj, endereco, telefone, email, observacao, usuario, senha } = req.body;
+    const { nome, cnpj, endereco, telefone, email, observacao, cep, inscricao_estadual, contato, usuario, senha } = req.body;
     if (!nome || !cnpj || !usuario || !senha) {
       res.status(400).json({ message: 'Campos obrigatórios: nome, cnpj, usuario, senha' });
       return;
@@ -256,10 +257,11 @@ app.post('/api/admin/empresas', auth, soRoot, async (req, res) => {
 
     await masterDb.execute({
       sql: `INSERT INTO empresas
-              (nome, cnpj, endereco, telefone, email, observacao, banco_dados, usuario_admin, senha_admin)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              (nome, cnpj, endereco, telefone, email, observacao, cep, inscricao_estadual, contato, banco_dados, usuario_admin, senha_admin)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [nome, cnpjLimpo, endereco || null, telefone || null, email || null,
-             observacao || null, bancoDados, usuario, senhaHash],
+             observacao || null, cep || null, inscricao_estadual || null, contato || null,
+             bancoDados, usuario, senhaHash],
     });
 
     res.status(201).json({ message: 'Empresa cadastrada com sucesso!' });
@@ -272,12 +274,13 @@ app.post('/api/admin/empresas', auth, soRoot, async (req, res) => {
 // Atualiza dados de uma empresa (e opcionalmente redefine senha do admin)
 app.put('/api/admin/empresas/:id', auth, soRoot, async (req, res) => {
   try {
-    const { nome, endereco, telefone, email, observacao, senha } = req.body;
+    const { nome, endereco, telefone, email, observacao, cep, inscricao_estadual, contato, senha } = req.body;
     const id = Number(req.params.id);
 
     await masterDb.execute({
-      sql: 'UPDATE empresas SET nome=?, endereco=?, telefone=?, email=?, observacao=? WHERE id=?',
-      args: [nome, endereco || null, telefone || null, email || null, observacao || null, id],
+      sql: 'UPDATE empresas SET nome=?, endereco=?, telefone=?, email=?, observacao=?, cep=?, inscricao_estadual=?, contato=? WHERE id=?',
+      args: [nome, endereco || null, telefone || null, email || null, observacao || null,
+             cep || null, inscricao_estadual || null, contato || null, id],
     });
 
     // Se nova senha informada, atualiza no master e no banco do tenant
@@ -368,6 +371,24 @@ app.delete('/api/admin/empresas/:id', auth, soRoot, async (req, res) => {
     res.json({ success: true });
   } catch {
     res.status(500).json({ message: 'Erro ao excluir empresa' });
+  }
+});
+
+// Lista usuários (técnicos) de uma empresa pelo ID
+app.get('/api/admin/empresas/:id/usuarios', auth, soRoot, async (req, res) => {
+  try {
+    const rows = await masterDb.execute({ sql: 'SELECT cnpj FROM empresas WHERE id=?', args: [Number(req.params.id)] });
+    if (rows.rows.length === 0) { res.status(404).json({ message: 'Empresa não encontrada' }); return; }
+    const cnpj = String(rows.rows[0].cnpj);
+    const prisma = getTenantPrisma(cnpj);
+    const tecnicos = await (prisma as any).tecnico.findMany({
+      select: { id: true, nome: true, usuario: true, cargo: true, ativo: true },
+      orderBy: { nome: 'asc' },
+    });
+    res.json(tecnicos);
+  } catch (e) {
+    console.error('[admin/empresas/:id/usuarios]', e);
+    res.status(500).json({ message: 'Erro ao buscar usuários' });
   }
 });
 

@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+import { AdminRoot } from './pages/AdminRoot';
 import { Dashboard } from './pages/Dashboard';
 import { Clients } from './pages/Clients';
 import { Vehicles } from './pages/Vehicles';
@@ -10,14 +12,17 @@ import { OsPage } from './pages/OsPage';
 import { Catalog } from './pages/Catalog';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.isRoot) return <AdminRoot />;
+  return <>{children}</>;
 };
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route
         path="/*"
         element={

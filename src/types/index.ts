@@ -84,10 +84,21 @@ export interface Empresa {
   telefone?: string;
   email?: string;
   observacao?: string;
+  cep?: string;
+  inscricao_estadual?: string;
+  contato?: string;
   ativo: boolean;
   data_cadastro: string;
   banco_dados: string;
   usuario_admin: string;
+}
+
+export interface TenantUser {
+  id: number;
+  nome: string;
+  usuario: string;
+  cargo: string;
+  ativo: boolean;
 }
 
 export interface Stats {

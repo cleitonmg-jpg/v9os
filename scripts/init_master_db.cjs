@@ -39,18 +39,21 @@ const DDL_SQLITE = `
     nome     TEXT    NOT NULL DEFAULT 'Administrador Root'
   );
   CREATE TABLE IF NOT EXISTS empresas (
-    id            INTEGER  PRIMARY KEY AUTOINCREMENT,
-    nome          TEXT     NOT NULL,
-    endereco      TEXT,
-    cnpj          TEXT     NOT NULL UNIQUE,
-    telefone      TEXT,
-    email         TEXT,
-    data_cadastro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    observacao    TEXT,
-    ativo         INTEGER  NOT NULL DEFAULT 1,
-    banco_dados   TEXT     NOT NULL,
-    usuario_admin TEXT     NOT NULL,
-    senha_admin   TEXT     NOT NULL
+    id                 INTEGER  PRIMARY KEY AUTOINCREMENT,
+    nome               TEXT     NOT NULL,
+    endereco           TEXT,
+    cnpj               TEXT     NOT NULL UNIQUE,
+    telefone           TEXT,
+    email              TEXT,
+    data_cadastro      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    observacao         TEXT,
+    ativo              INTEGER  NOT NULL DEFAULT 1,
+    banco_dados        TEXT     NOT NULL,
+    usuario_admin      TEXT     NOT NULL,
+    senha_admin        TEXT     NOT NULL,
+    cep                TEXT,
+    inscricao_estadual TEXT,
+    contato            TEXT
   );
 `;
 
@@ -62,19 +65,25 @@ const DDL_PG = `
     nome    VARCHAR(200) NOT NULL DEFAULT 'Administrador Root'
   );
   CREATE TABLE IF NOT EXISTS empresas (
-    id            SERIAL PRIMARY KEY,
-    nome          VARCHAR(200) NOT NULL,
-    endereco      TEXT,
-    cnpj          VARCHAR(20)  NOT NULL UNIQUE,
-    telefone      VARCHAR(20),
-    email         VARCHAR(200),
-    data_cadastro TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    observacao    TEXT,
-    ativo         BOOLEAN      NOT NULL DEFAULT TRUE,
-    banco_dados   VARCHAR(200) NOT NULL,
-    usuario_admin VARCHAR(100) NOT NULL,
-    senha_admin   TEXT         NOT NULL
+    id                 SERIAL PRIMARY KEY,
+    nome               VARCHAR(200) NOT NULL,
+    endereco           TEXT,
+    cnpj               VARCHAR(20)  NOT NULL UNIQUE,
+    telefone           VARCHAR(20),
+    email              VARCHAR(200),
+    data_cadastro      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    observacao         TEXT,
+    ativo              BOOLEAN      NOT NULL DEFAULT TRUE,
+    banco_dados        VARCHAR(200) NOT NULL,
+    usuario_admin      VARCHAR(100) NOT NULL,
+    senha_admin        TEXT         NOT NULL,
+    cep                VARCHAR(10),
+    inscricao_estadual VARCHAR(50),
+    contato            VARCHAR(200)
   );
+  ALTER TABLE empresas ADD COLUMN IF NOT EXISTS cep VARCHAR(10);
+  ALTER TABLE empresas ADD COLUMN IF NOT EXISTS inscricao_estadual VARCHAR(50);
+  ALTER TABLE empresas ADD COLUMN IF NOT EXISTS contato VARCHAR(200);
 `;
 
 const DDL_MYSQL = `
@@ -85,18 +94,21 @@ const DDL_MYSQL = `
     nome    VARCHAR(200) NOT NULL DEFAULT 'Administrador Root'
   );
   CREATE TABLE IF NOT EXISTS empresas (
-    id            INT AUTO_INCREMENT PRIMARY KEY,
-    nome          VARCHAR(200) NOT NULL,
-    endereco      TEXT,
-    cnpj          VARCHAR(20)  NOT NULL UNIQUE,
-    telefone      VARCHAR(20),
-    email         VARCHAR(200),
-    data_cadastro DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    observacao    TEXT,
-    ativo         TINYINT(1)   NOT NULL DEFAULT 1,
-    banco_dados   VARCHAR(200) NOT NULL,
-    usuario_admin VARCHAR(100) NOT NULL,
-    senha_admin   TEXT         NOT NULL
+    id                 INT AUTO_INCREMENT PRIMARY KEY,
+    nome               VARCHAR(200) NOT NULL,
+    endereco           TEXT,
+    cnpj               VARCHAR(20)  NOT NULL UNIQUE,
+    telefone           VARCHAR(20),
+    email              VARCHAR(200),
+    data_cadastro      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    observacao         TEXT,
+    ativo              TINYINT(1)   NOT NULL DEFAULT 1,
+    banco_dados        VARCHAR(200) NOT NULL,
+    usuario_admin      VARCHAR(100) NOT NULL,
+    senha_admin        TEXT         NOT NULL,
+    cep                VARCHAR(10),
+    inscricao_estadual VARCHAR(50),
+    contato            VARCHAR(200)
   );
 `;
 
@@ -120,6 +132,10 @@ async function initSqlite(force) {
     for (const stmt of DDL_SQLITE.split(';').map(s => s.trim()).filter(Boolean)) {
       await db.execute(stmt);
     }
+    // Migrate: add new columns if they don't exist yet
+    for (const col of ['cep TEXT', 'inscricao_estadual TEXT', 'contato TEXT']) {
+      try { await db.execute(`ALTER TABLE empresas ADD COLUMN ${col}`); } catch { /* já existe */ }
+    }
     const senhaHash = await bcrypt.hash('Belvedere640@', 10);
     await db.execute({
       sql: `INSERT OR REPLACE INTO administradores (usuario, senha, nome) VALUES (?, ?, ?)`,
@@ -136,6 +152,10 @@ async function garantirRootSqlite() {
   const { createClient } = require('@libsql/client');
   const db = createClient({ url: 'file:./master.db' });
   try {
+    // Migrate: add new columns if they don't exist
+    for (const col of ['cep TEXT', 'inscricao_estadual TEXT', 'contato TEXT']) {
+      try { await db.execute(`ALTER TABLE empresas ADD COLUMN ${col}`); } catch { /* já existe */ }
+    }
     const res = await db.execute(`SELECT id FROM administradores WHERE usuario = 'Master'`);
     if (res.rows.length === 0) {
       const senhaHash = await bcrypt.hash('Belvedere640@', 10);

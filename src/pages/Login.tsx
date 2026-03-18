@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Wrench, Lock, User, Eye, EyeOff, Building2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -105,6 +105,15 @@ export const Login = () => {
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
+
+          <div className="mt-6 pt-5 border-t border-slate-100 text-center">
+            <p className="text-sm text-slate-500">
+              Ainda não tem acesso?{' '}
+              <Link to="/register" className="text-petroleum-600 hover:text-petroleum-800 font-semibold">
+                Cadastre-se Agora
+              </Link>
+            </p>
+          </div>
         </div>
 
         <p className="text-center text-petroleum-300 text-xs mt-6">V9 INFORMÁTICA LTDA · (37) 4141-0341</p>

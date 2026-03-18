@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Wrench, Building2, User, Lock, Phone, Mail, MapPin, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Wrench, Building2, User, Lock, Phone, Mail, MapPin, Eye, EyeOff, CheckCircle, Hash, Contact } from 'lucide-react';
 import api from '../lib/api';
 
 interface RegForm {
   nome: string;
   cnpj: string;
   endereco: string;
+  cep: string;
   telefone: string;
   email: string;
+  inscricao_estadual: string;
+  contato: string;
   observacao: string;
   usuario: string;
   senha: string;
@@ -16,8 +19,9 @@ interface RegForm {
 }
 
 const empty: RegForm = {
-  nome: '', cnpj: '', endereco: '', telefone: '',
-  email: '', observacao: '', usuario: '', senha: '', confirmarSenha: '',
+  nome: '', cnpj: '', endereco: '', cep: '', telefone: '',
+  email: '', inscricao_estadual: '', contato: '', observacao: '',
+  usuario: '', senha: '', confirmarSenha: '',
 };
 
 export const Register = () => {
@@ -157,6 +161,34 @@ export const Register = () => {
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input type="text" value={form.endereco} onChange={F('endereco')} placeholder="Rua, número, bairro, cidade - UF"
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">CEP</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input type="text" value={form.cep} onChange={F('cep')} placeholder="00000-000"
+                    className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Inscrição Estadual</label>
+                <div className="relative">
+                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input type="text" value={form.inscricao_estadual} onChange={F('inscricao_estadual')} placeholder="Nº Inscrição Estadual"
+                    className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500" />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Contato (pessoa responsável)</label>
+              <div className="relative">
+                <Contact className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input type="text" value={form.contato} onChange={F('contato')} placeholder="Nome do responsável"
                   className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500" />
               </div>
             </div>
