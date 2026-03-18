@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@theme {
+  --color-petroleum-50: #f1f7f9;
+  --color-petroleum-100: #dcebf1;
+  --color-petroleum-200: #bdd9e4;
+  --color-petroleum-300: #90bed1;
+  --color-petroleum-400: #5c99b6;
+  --color-petroleum-500: #3e7d9b;
+  --color-petroleum-600: #356682;
+  --color-petroleum-700: #30546c;
+  --color-petroleum-800: #2d475b;
+  --color-petroleum-900: #293d4e;
+  --color-petroleum-950: #172633;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900;
+  }
+
+  .dark body {
+    @apply bg-slate-950 text-slate-50;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20;
+  }
+
+  .dark .glass {
+    @apply bg-slate-900/70 border-slate-800/50;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 bg-petroleum-600 text-white hover:bg-petroleum-700;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 bg-white text-petroleum-700 border border-petroleum-200 hover:bg-petroleum-50;
+  }
+}

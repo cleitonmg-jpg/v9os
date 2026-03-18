@@ -1,0 +1,10 @@
+-- CreateTable
+CREATE TABLE "ServiceItem" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "description" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'SERVICE',
+    "unitPrice" REAL NOT NULL DEFAULT 0,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);

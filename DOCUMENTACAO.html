@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Documentação — V9 OS Sistema de Oficina</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; background: #fff; font-size: 13px; line-height: 1.7; }
+
+    /* CAPA */
+    .capa { background: linear-gradient(135deg, #1e3a4a 0%, #356682 100%); color: white; padding: 80px 60px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+    .capa-logo { font-size: 48px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px; }
+    .capa-logo span { color: #7dd3fc; }
+    .capa-subtitle { font-size: 20px; color: #bae6fd; margin-bottom: 60px; }
+    .capa-title { font-size: 32px; font-weight: 700; margin-bottom: 16px; }
+    .capa-desc { font-size: 16px; color: #cbd5e1; max-width: 560px; line-height: 1.8; }
+    .capa-footer { margin-top: auto; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.2); color: #94a3b8; font-size: 12px; }
+    .capa-badges { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 40px; }
+    .badge { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+    /* LAYOUT GERAL */
+    .page { padding: 50px 60px; max-width: 900px; margin: 0 auto; }
+
+    /* SEÇÕES */
+    .section { margin-bottom: 48px; page-break-inside: avoid; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #356682; }
+    .section-icon { width: 36px; height: 36px; background: #e0f2fe; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .section-title { font-size: 22px; font-weight: 800; color: #356682; }
+    .section-number { font-size: 12px; color: #94a3b8; font-weight: 600; background: #f1f5f9; padding: 2px 8px; border-radius: 10px; }
+
+    /* ÍNDICE */
+    .toc { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px 32px; margin-bottom: 40px; }
+    .toc-title { font-size: 16px; font-weight: 800; color: #356682; margin-bottom: 16px; }
+    .toc-list { list-style: none; columns: 2; gap: 24px; }
+    .toc-list li { padding: 4px 0; border-bottom: 1px dotted #e2e8f0; }
+    .toc-list li a { color: #475569; text-decoration: none; font-size: 13px; }
+    .toc-list li a:hover { color: #356682; }
+    .toc-num { color: #94a3b8; font-size: 11px; margin-right: 6px; }
+
+    /* CARDS DE ARQUIVO */
+    .file-card { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 16px; overflow: hidden; page-break-inside: avoid; }
+    .file-header { background: #f8fafc; padding: 14px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e2e8f0; }
+    .file-icon { font-size: 20px; }
+    .file-path { font-family: 'Courier New', monospace; font-size: 13px; font-weight: 700; color: #0f172a; flex: 1; }
+    .file-tag { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+    .tag-backend { background: #fef3c7; color: #92400e; }
+    .tag-frontend { background: #dbeafe; color: #1e40af; }
+    .tag-config { background: #f3e8ff; color: #7e22ce; }
+    .tag-db { background: #dcfce7; color: #166534; }
+    .file-body { padding: 16px 20px; }
+    .file-desc { color: #475569; margin-bottom: 12px; font-size: 13px; }
+    .file-details { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .file-detail { background: #f8fafc; border-radius: 6px; padding: 8px 12px; font-size: 12px; }
+    .file-detail strong { color: #356682; display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+
+    /* CAIXAS */
+    .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 6px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #1e40af; }
+    .warn-box { background: #fefce8; border-left: 4px solid #eab308; border-radius: 6px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #854d0e; }
+    .success-box { background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 6px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #166534; }
+    .tip-box { background: #fdf4ff; border-left: 4px solid #a855f7; border-radius: 6px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #6b21a8; }
+    .box-title { font-weight: 700; margin-bottom: 4px; }
+
+    /* DIAGRAMA */
+    .diagram { background: #0f172a; color: #e2e8f0; font-family: 'Courier New', monospace; font-size: 12px; border-radius: 12px; padding: 24px; margin-bottom: 20px; line-height: 2; }
+    .diagram .green { color: #4ade80; }
+    .diagram .blue { color: #60a5fa; }
+    .diagram .yellow { color: #fbbf24; }
+    .diagram .gray { color: #64748b; }
+    .diagram .white { color: #f8fafc; font-weight: 700; }
+
+    /* TABELA */
+    .table-wrapper { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { background: #f1f5f9; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding: 10px 14px; text-align: left; }
+    td { padding: 10px 14px; border-top: 1px solid #f1f5f9; color: #334155; }
+    tr:hover td { background: #fafafa; }
+    .method { font-family: monospace; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+    .get { background: #dbeafe; color: #1d4ed8; }
+    .post { background: #dcfce7; color: #166534; }
+    .put { background: #fef9c3; color: #854d0e; }
+    .del { background: #fee2e2; color: #991b1b; }
+
+    /* FLUXO */
+    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .flow-step { background: #356682; color: white; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .flow-arrow { color: #94a3b8; font-size: 18px; }
+
+    /* COMANDOS */
+    .cmd { background: #0f172a; color: #4ade80; font-family: 'Courier New', monospace; font-size: 12px; border-radius: 8px; padding: 12px 16px; margin: 8px 0; }
+    .cmd-comment { color: #64748b; }
+
+    /* GLOSSÁRIO */
+    .glossary-item { padding: 12px 0; border-bottom: 1px solid #f1f5f9; display: grid; grid-template-columns: 140px 1fr; gap: 16px; }
+    .glossary-term { font-weight: 700; color: #356682; font-size: 13px; }
+    .glossary-def { color: #475569; font-size: 13px; }
+
+    /* FUNCIONALIDADES */
+    .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .feature-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; }
+    .feature-icon { font-size: 24px; margin-bottom: 8px; }
+    .feature-title { font-weight: 700; color: #0f172a; margin-bottom: 4px; font-size: 14px; }
+    .feature-desc { color: #64748b; font-size: 12px; line-height: 1.6; }
+
+    /* PRINT */
+    @media print {
+      body { font-size: 12px; }
+      .page { padding: 30px 40px; }
+      .capa { padding: 60px 40px; }
+      .section { page-break-inside: avoid; }
+      .file-card { page-break-inside: avoid; }
+      @page { margin: 0; size: A4; }
+    }
+
+    h3 { font-size: 15px; font-weight: 700; color: #0f172a; margin: 20px 0 10px; }
+    p { margin-bottom: 10px; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; color: #475569; }
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ CAPA -->
+<div class="capa">
+  <div class="capa-logo">V9 <span>OS</span></div>
+  <div class="capa-subtitle">Sistema de Gestão de Oficina Mecânica</div>
+  <div class="capa-title">Documentação Técnica do Projeto</div>
+  <div class="capa-desc">
+    Este documento descreve em detalhes todos os arquivos do sistema V9 OS, explicando o que cada um faz, como se comunicam entre si e como o sistema funciona como um todo. Feito para quem não tem conhecimento em programação.
+  </div>
+  <div class="capa-badges">
+    <span class="badge">📋 React + TypeScript</span>
+    <span class="badge">⚙️ Node.js + Express</span>
+    <span class="badge">🗄️ SQLite / Prisma</span>
+    <span class="badge">🔐 JWT Auth</span>
+    <span class="badge">📄 PDF Generator</span>
+  </div>
+  <div class="capa-footer">
+    V9 INFORMÁTICA LTDA · (37) 4141-0341 · Divinópolis - MG · Março 2026
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PÁGINA 2 -->
+<div class="page">
+
+  <!-- ÍNDICE -->
+  <div class="toc">
+    <div class="toc-title">📑 Índice</div>
+    <ul class="toc-list">
+      <li><span class="toc-num">1.</span> <a href="#visao">Visão Geral do Sistema</a></li>
+      <li><span class="toc-num">2.</span> <a href="#funcionalidades">Funcionalidades</a></li>
+      <li><span class="toc-num">3.</span> <a href="#estrutura">Estrutura de Pastas</a></li>
+      <li><span class="toc-num">4.</span> <a href="#banco">Banco de Dados</a></li>
+      <li><span class="toc-num">5.</span> <a href="#backend">Arquivos do Servidor (Backend)</a></li>
+      <li><span class="toc-num">6.</span> <a href="#frontend">Arquivos da Tela (Frontend)</a></li>
+      <li><span class="toc-num">7.</span> <a href="#componentes">Componentes Visuais</a></li>
+      <li><span class="toc-num">8.</span> <a href="#paginas">Páginas do Sistema</a></li>
+      <li><span class="toc-num">9.</span> <a href="#api">Rotas da API</a></li>
+      <li><span class="toc-num">10.</span> <a href="#comandos">Como Iniciar o Sistema</a></li>
+      <li><span class="toc-num">11.</span> <a href="#fluxo">Fluxo de Uso</a></li>
+      <li><span class="toc-num">12.</span> <a href="#glossario">Glossário</a></li>
+    </ul>
+  </div>
+
+  <!-- 1. VISÃO GERAL -->
+  <div class="section" id="visao">
+    <div class="section-header">
+      <div class="section-icon">🔭</div>
+      <div class="section-title">1. Visão Geral do Sistema</div>
+    </div>
+
+    <div class="info-box">
+      <div class="box-title">O que é o V9 OS?</div>
+      É um sistema web completo para gerenciar uma oficina mecânica. Funciona pelo navegador (como um site), mas roda no computador da própria empresa sem precisar de internet. Permite cadastrar clientes, veículos, abrir ordens de serviço, gerar orçamentos, emitir PDFs e enviar mensagens pelo WhatsApp.
+    </div>
+
+    <h3>Como o sistema é dividido?</h3>
+    <p>O sistema tem duas partes que trabalham juntas:</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🖥️</div>
+        <div class="feature-title">Frontend (A Tela)</div>
+        <div class="feature-desc">É a parte visual que você vê no navegador — botões, tabelas, formulários. Feito com React e TypeScript. Roda na porta 5173.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚙️</div>
+        <div class="feature-title">Backend (O Servidor)</div>
+        <div class="feature-desc">É a parte invisível que processa os dados, salva no banco e responde às ações. Feito com Node.js e Express. Roda na porta 3001.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗄️</div>
+        <div class="feature-title">Banco de Dados</div>
+        <div class="feature-desc">Um arquivo SQLite (dev.db) que fica na pasta do projeto. Guarda todos os dados: clientes, veículos, OS, etc. Gerenciado pelo Prisma ORM.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <div class="feature-title">Autenticação JWT</div>
+        <div class="feature-desc">Sistema de login com token seguro. Sem login, nenhuma tela é acessível. O token expira em 8 horas e é renovado a cada acesso.</div>
+      </div>
+    </div>
+
+    <div class="diagram">
+      <div class="gray">┌─────────────────────────────────────────────────────────────┐</div>
+      <div class="gray">│                    COMO TUDO SE CONECTA                     │</div>
+      <div class="gray">└─────────────────────────────────────────────────────────────┘</div>
+      <br>
+      <div><span class="blue">  NAVEGADOR</span>   <span class="gray">──────────────────────</span>   <span class="yellow">SERVIDOR NODE.JS</span></div>
+      <div><span class="blue">  (porta 5173)</span> <span class="gray">  HTTP / JSON / JWT   </span>   <span class="yellow">(porta 3001)</span></div>
+      <div><span class="gray">        │                                          │</span></div>
+      <div><span class="gray">        │                                          │</span></div>
+      <div><span class="blue">  React + Vite</span>                              <span class="green">Prisma ORM</span></div>
+      <div><span class="blue">  TypeScript</span>                                 <span class="gray">      │</span></div>
+      <div><span class="blue">  Tailwind CSS</span>                               <span class="gray">      │</span></div>
+      <div><span class="gray">                                                   │</span></div>
+      <div>                                            <span class="green">dev.db (SQLite)</span></div>
+      <div>                                         <span class="gray">arquivo no HD local</span></div>
+    </div>
+  </div>
+
+  <!-- 2. FUNCIONALIDADES -->
+  <div class="section" id="funcionalidades">
+    <div class="section-header">
+      <div class="section-icon">✅</div>
+      <div class="section-title">2. Funcionalidades do Sistema</div>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Dashboard</div>
+        <div class="feature-desc">Painel inicial com totais: orçamentos abertos, OS concluídas no mês, veículos na oficina e lista das últimas movimentações.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <div class="feature-title">Clientes</div>
+        <div class="feature-desc">Cadastro completo de clientes. Nome obrigatório; CPF/CNPJ, telefone, e-mail e endereço são opcionais. Busca em tempo real.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚗</div>
+        <div class="feature-title">Veículos</div>
+        <div class="feature-desc">Cadastro de veículos vinculados a clientes. Campos: placa, marca, modelo, ano, cor, chassi e quilometragem.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔧</div>
+        <div class="feature-title">Técnicos</div>
+        <div class="feature-desc">Gestão de técnicos com login, senha e perfil. Cada item de serviço pode ser vinculado a um técnico responsável.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <div class="feature-title">Orçamentos</div>
+        <div class="feature-desc">Criação de orçamentos com itens (serviços/peças), cálculo automático de totais, status e geração de PDF.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <div class="feature-title">Ordens de Serviço</div>
+        <div class="feature-desc">OS completa com defeito relatado, itens executados, técnico responsável e comprovante de recebimento do veículo.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <div class="feature-title">Catálogo</div>
+        <div class="feature-desc">Tabela de serviços e peças com preço de custo, venda e estoque. Integrado ao formulário de OS/orçamento para seleção rápida.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">WhatsApp + PDF</div>
+        <div class="feature-desc">Envio direto de mensagem ao cliente pelo WhatsApp com resumo da OS/orçamento. Geração e impressão de PDF profissional.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PÁGINA 3 -->
+<div class="page page-break">
+
+  <!-- 3. ESTRUTURA DE PASTAS -->
+  <div class="section" id="estrutura">
+    <div class="section-header">
+      <div class="section-icon">📁</div>
+      <div class="section-title">3. Estrutura de Pastas</div>
+    </div>
+
+    <div class="diagram">
+<span class="white">V9ORCAMENTOS/</span>
+<span class="gray">│</span>
+<span class="green">├── server/</span>
+<span class="gray">│   └──</span> <span class="yellow">index.ts</span>         <span class="gray">← Servidor Node.js completo (API + Auth + Banco)</span>
+<span class="gray">│</span>
+<span class="green">├── prisma/</span>
+<span class="gray">│   ├──</span> <span class="yellow">schema.prisma</span>    <span class="gray">← Estrutura do banco de dados</span>
+<span class="gray">│   ├──</span> <span class="yellow">seed.cjs</span>         <span class="gray">← Dados iniciais (usuário admin + exemplo)</span>
+<span class="gray">│   └── migrations/</span>       <span class="gray">← Histórico de alterações no banco</span>
+<span class="gray">│</span>
+<span class="green">├── src/</span>                   <span class="gray">← Todo o código das telas (frontend)</span>
+<span class="gray">│   ├──</span> <span class="yellow">main.tsx</span>         <span class="gray">← Ponto de entrada do React</span>
+<span class="gray">│   ├──</span> <span class="yellow">App.tsx</span>          <span class="gray">← Rotas de navegação</span>
+<span class="gray">│   ├──</span> <span class="yellow">index.css</span>        <span class="gray">← Estilos globais (Tailwind)</span>
+<span class="gray">│   │</span>
+<span class="gray">│   ├── types/</span>
+<span class="gray">│   │   └──</span> <span class="blue">index.ts</span>     <span class="gray">← Formatos dos dados (contratos)</span>
+<span class="gray">│   │</span>
+<span class="gray">│   ├── lib/</span>
+<span class="gray">│   │   └──</span> <span class="blue">api.ts</span>       <span class="gray">← Comunicação com o servidor</span>
+<span class="gray">│   │</span>
+<span class="gray">│   ├── contexts/</span>
+<span class="gray">│   │   └──</span> <span class="blue">AuthContext.tsx</span> <span class="gray">← Controle de login/logout</span>
+<span class="gray">│   │</span>
+<span class="gray">│   ├── components/</span>       <span class="gray">← Peças reutilizáveis de tela</span>
+<span class="gray">│   │   ├──</span> <span class="blue">Layout.tsx</span>   <span class="gray">← Estrutura geral (menu + conteúdo)</span>
+<span class="gray">│   │   ├──</span> <span class="blue">Sidebar.tsx</span>  <span class="gray">← Menu lateral esquerdo</span>
+<span class="gray">│   │   ├──</span> <span class="blue">Modal.tsx</span>    <span class="gray">← Janelas flutuantes</span>
+<span class="gray">│   │   └──</span> <span class="blue">OsPdf.tsx</span>   <span class="gray">← Gerador de PDF</span>
+<span class="gray">│   │</span>
+<span class="gray">│   └── pages/</span>            <span class="gray">← Cada tela do sistema</span>
+<span class="gray">│       ├──</span> <span class="blue">Login.tsx</span>
+<span class="gray">│       ├──</span> <span class="blue">Dashboard.tsx</span>
+<span class="gray">│       ├──</span> <span class="blue">Clients.tsx</span>
+<span class="gray">│       ├──</span> <span class="blue">Vehicles.tsx</span>
+<span class="gray">│       ├──</span> <span class="blue">Technicians.tsx</span>
+<span class="gray">│       ├──</span> <span class="blue">OsPage.tsx</span>
+<span class="gray">│       └──</span> <span class="blue">Catalog.tsx</span>
+<span class="gray">│</span>
+<span class="green">├── package.json</span>           <span class="gray">← Lista de dependências e comandos</span>
+<span class="green">├── prisma.config.ts</span>       <span class="gray">← Configuração do Prisma</span>
+<span class="green">├── tailwind.config.js</span>     <span class="gray">← Configuração do Tailwind CSS</span>
+<span class="green">├── vite.config.ts</span>         <span class="gray">← Configuração do Vite (bundler)</span>
+<span class="green">└── dev.db</span>                 <span class="gray">← Banco de dados SQLite (arquivo físico)</span>
+    </div>
+  </div>
+
+  <!-- 4. BANCO DE DADOS -->
+  <div class="section" id="banco">
+    <div class="section-header">
+      <div class="section-icon">🗄️</div>
+      <div class="section-title">4. Banco de Dados</div>
+    </div>
+
+    <div class="info-box">
+      <div class="box-title">O que é o banco de dados?</div>
+      É um arquivo chamado <strong>dev.db</strong> que fica na pasta raiz do projeto. Funciona como uma planilha Excel, mas muito mais rápido e seguro. Todos os dados do sistema ficam nele. O Prisma ORM é a ferramenta que faz o sistema conversar com esse arquivo.
+    </div>
+
+    <h3>Tabelas do Banco (arquivo: <code>prisma/schema.prisma</code>)</h3>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Tabela</th><th>O que guarda</th><th>Campos principais</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Technician</strong></td>
+            <td>Técnicos e usuários do sistema</td>
+            <td>username, name, senha (hash), cargo, ativo</td>
+          </tr>
+          <tr>
+            <td><strong>Client</strong></td>
+            <td>Clientes da oficina</td>
+            <td>nome, CPF/CNPJ (opcional), telefone, e-mail, endereço</td>
+          </tr>
+          <tr>
+            <td><strong>Vehicle</strong></td>
+            <td>Veículos dos clientes</td>
+            <td>placa, marca, modelo, ano, cor, chassi, km, clienteId</td>
+          </tr>
+          <tr>
+            <td><strong>OSBudget</strong></td>
+            <td>Ordens de serviço e orçamentos</td>
+            <td>número, tipo (OS/Orçamento), status, data, clienteId, veículoId, defeito, total, observações</td>
+          </tr>
+          <tr>
+            <td><strong>OSItem</strong></td>
+            <td>Itens dentro de uma OS/orçamento</td>
+            <td>descrição, quantidade, preço unitário, total, tipo (Serviço/Peça), técnicoId</td>
+          </tr>
+          <tr>
+            <td><strong>ServiceItem</strong></td>
+            <td>Catálogo de serviços e peças</td>
+            <td>descrição, tipo, preço de custo, preço de venda, estoque, ativo</td>
+          </tr>
+          <tr>
+            <td><strong>AuditLog</strong></td>
+            <td>Registro de ações realizadas</td>
+            <td>técnicoId, ação, entidade, data</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="warn-box">
+      <div class="box-title">⚠️ Atenção — Faça backup do arquivo dev.db!</div>
+      Todos os dados ficam nesse único arquivo. Se ele for excluído ou corrompido, todos os dados são perdidos. Recomenda-se fazer cópia desse arquivo regularmente para um pendrive ou Google Drive.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PÁGINA 4 — BACKEND -->
+<div class="page page-break">
+
+  <!-- 5. ARQUIVOS DO SERVIDOR -->
+  <div class="section" id="backend">
+    <div class="section-header">
+      <div class="section-icon">⚙️</div>
+      <div class="section-title">5. Arquivos do Servidor (Backend)</div>
+    </div>
+
+    <div class="info-box">
+      O backend é o "motor" invisível do sistema. Ele recebe os pedidos da tela, processa, salva no banco e retorna o resultado. O usuário nunca vê essa parte diretamente.
+    </div>
+
+    <!-- server/index.ts -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">⚙️</div>
+        <div class="file-path">server/index.ts</div>
+        <span class="file-tag tag-backend">BACKEND PRINCIPAL</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          <strong>Este é o coração do sistema.</strong> É um servidor que fica rodando continuamente na porta 3001 do computador. Ele recebe todas as requisições da tela (criar cliente, salvar OS, etc.), processa e responde com os dados. Está organizado em seções:
+        </div>
+        <ul>
+          <li><strong>Conexão com banco:</strong> Usa Prisma + libsql para conectar ao arquivo dev.db</li>
+          <li><strong>Middleware de autenticação:</strong> Toda rota protegida verifica o token JWT</li>
+          <li><strong>POST /api/auth/login:</strong> Valida usuário e senha, gera token de 8 horas</li>
+          <li><strong>CRUD de Clientes:</strong> Criar, listar, editar, excluir clientes</li>
+          <li><strong>CRUD de Veículos:</strong> Criar, listar, editar, excluir veículos</li>
+          <li><strong>CRUD de OS/Orçamentos:</strong> Inclui lógica de itens e cálculo de total</li>
+          <li><strong>GET /api/stats:</strong> Retorna os números do Dashboard</li>
+          <li><strong>CRUD de Técnicos:</strong> Inclui hash de senha ao criar/atualizar</li>
+          <li><strong>CRUD de Catálogo:</strong> Serviços e peças com custo/venda/estoque</li>
+        </ul>
+        <div class="file-details">
+          <div class="file-detail"><strong>Tecnologia</strong>Node.js + Express 5 + TypeScript</div>
+          <div class="file-detail"><strong>Porta</strong>3001 (http://localhost:3001)</div>
+          <div class="file-detail"><strong>Segurança</strong>JWT (token expira em 8h)</div>
+          <div class="file-detail"><strong>Banco</strong>Prisma ORM + SQLite via libsql</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- prisma/schema.prisma -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">📐</div>
+        <div class="file-path">prisma/schema.prisma</div>
+        <span class="file-tag tag-db">BANCO DE DADOS</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Define a <strong>estrutura (esquema) do banco de dados</strong>. É como um projeto arquitetônico — descreve quais tabelas existem, quais colunas cada uma tem e como elas se relacionam. Quando este arquivo é alterado, é necessário rodar uma "migração" para aplicar as mudanças no banco real.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>Banco utilizado</strong>SQLite (arquivo local)</div>
+          <div class="file-detail"><strong>Comando de migração</strong>npx prisma migrate dev</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- prisma/seed.cjs -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🌱</div>
+        <div class="file-path">prisma/seed.cjs</div>
+        <span class="file-tag tag-db">BANCO DE DADOS</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Script que popula o banco com <strong>dados iniciais</strong> na primeira execução. Cria o usuário administrador (login: <strong>user</strong> / senha: <strong>user123</strong>) e um cliente e veículo de exemplo para testes. É executado apenas uma vez na instalação.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>Comando</strong>node prisma/seed.cjs</div>
+          <div class="file-detail"><strong>Credenciais criadas</strong>user / user123</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PÁGINA 5 — FRONTEND BASE -->
+<div class="page page-break">
+
+  <!-- 6. ARQUIVOS BASE DO FRONTEND -->
+  <div class="section" id="frontend">
+    <div class="section-header">
+      <div class="section-icon">🖥️</div>
+      <div class="section-title">6. Arquivos Base do Frontend</div>
+    </div>
+
+    <div class="info-box">
+      O frontend são os arquivos que criam a interface visual — o que o usuário vê e interage. Todos ficam na pasta <code>src/</code>.
+    </div>
+
+    <!-- main.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🚀</div>
+        <div class="file-path">src/main.tsx</div>
+        <span class="file-tag tag-frontend">FRONTEND</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          <strong>Ponto de entrada</strong> de todo o frontend. É o primeiro arquivo executado quando o sistema abre no navegador. Ele "monta" o React dentro da página HTML, ativa o roteamento (BrowserRouter) e o sistema de login (AuthProvider). Pense nele como o "interruptor principal" — sem ele, nada funciona.
+        </div>
+      </div>
+    </div>
+
+    <!-- App.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🗺️</div>
+        <div class="file-path">src/App.tsx</div>
+        <span class="file-tag tag-frontend">FRONTEND</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Define as <strong>rotas de navegação</strong> do sistema — qual página aparece para cada endereço na URL. Também contém a lógica de "rota protegida": se o usuário não estiver logado, é redirecionado automaticamente para a tela de login.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>/</strong>Dashboard (painel)</div>
+          <div class="file-detail"><strong>/login</strong>Tela de login</div>
+          <div class="file-detail"><strong>/clients</strong>Clientes</div>
+          <div class="file-detail"><strong>/vehicles</strong>Veículos</div>
+          <div class="file-detail"><strong>/technicians</strong>Técnicos</div>
+          <div class="file-detail"><strong>/catalog</strong>Catálogo</div>
+          <div class="file-detail"><strong>/budgets</strong>Orçamentos</div>
+          <div class="file-detail"><strong>/os</strong>Ordens de Serviço</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- types/index.ts -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">📋</div>
+        <div class="file-path">src/types/index.ts</div>
+        <span class="file-tag tag-config">CONFIGURAÇÃO</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Define os <strong>"contratos de dados"</strong> — especifica exatamente como cada informação deve ser formatada no sistema. Por exemplo: um "Cliente" tem id (número), nome (texto), CPF (texto opcional), telefone (texto). Isso evita erros e garante consistência entre a tela e o servidor.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>Client</strong>id, name, cpfCnpj?, phone, email?, address?</div>
+          <div class="file-detail"><strong>Vehicle</strong>id, plate, brand, model, year, color, mileage</div>
+          <div class="file-detail"><strong>OSBudget</strong>id, number, type, status, date, items, total</div>
+          <div class="file-detail"><strong>ServiceItem</strong>id, description, type, costPrice, unitPrice, stock</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- lib/api.ts -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🔌</div>
+        <div class="file-path">src/lib/api.ts</div>
+        <span class="file-tag tag-frontend">FRONTEND</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          <strong>Canal de comunicação</strong> entre a tela e o servidor. Toda vez que a tela precisa buscar ou salvar dados, usa este arquivo. Ele automaticamente: (1) adiciona o token JWT em cada pedido, (2) redireciona para o login se o token expirar (erro 401). É como um "carteiro" que sempre leva o crachá de identificação.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>Biblioteca</strong>Axios</div>
+          <div class="file-detail"><strong>Base URL</strong>http://localhost:3001/api</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- contexts/AuthContext.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🔐</div>
+        <div class="file-path">src/contexts/AuthContext.tsx</div>
+        <span class="file-tag tag-frontend">FRONTEND</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Gerencia o <strong>estado de autenticação</strong> de todo o sistema. Guarda se o usuário está logado, quem é ele (nome, cargo) e o token JWT. Salva essas informações no localStorage do navegador para que o login persista mesmo após recarregar a página. Fornece as funções <code>login()</code> e <code>logout()</code> para toda a aplicação.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>Persistência</strong>localStorage do navegador</div>
+          <div class="file-detail"><strong>Dados salvos</strong>token, nome, cargo, username</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PÁGINA 6 — COMPONENTES -->
+<div class="page page-break">
+
+  <!-- 7. COMPONENTES VISUAIS -->
+  <div class="section" id="componentes">
+    <div class="section-header">
+      <div class="section-icon">🧩</div>
+      <div class="section-title">7. Componentes Visuais (src/components/)</div>
+    </div>
+
+    <div class="tip-box">
+      <div class="box-title">O que são componentes?</div>
+      São "peças" de tela reutilizáveis. Em vez de escrever o mesmo código toda vez, cria-se um componente uma vez e usa-se em vários lugares. Por exemplo, o Modal (janela flutuante) é usado em todas as telas do sistema.
+    </div>
+
+    <!-- Layout.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🏗️</div>
+        <div class="file-path">src/components/Layout.tsx</div>
+        <span class="file-tag tag-frontend">COMPONENTE</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Define a <strong>estrutura geral de todas as telas</strong> após o login. Organiza a tela em: menu lateral à esquerda (Sidebar) + área de conteúdo principal à direita. Exibe no topo o nome e as iniciais do usuário logado. Toda página do sistema (Dashboard, Clientes, etc.) é exibida dentro deste layout.
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">📌</div>
+        <div class="file-path">src/components/Sidebar.tsx</div>
+        <span class="file-tag tag-frontend">COMPONENTE</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          O <strong>menu de navegação lateral</strong> fixo à esquerda. Lista os itens do menu na ordem configurada e destaca visualmente o item da página atual. Contém o botão "Sair" no rodapé que encerra a sessão. Para alterar a ordem ou nome dos itens do menu, este é o arquivo a editar.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>Itens atuais</strong>Dashboard, Veículos, Clientes, Técnicos, Catálogo, Orçamentos, OS</div>
+          <div class="file-detail"><strong>Item ativo</strong>Detectado pela URL atual</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🪟</div>
+        <div class="file-path">src/components/Modal.tsx</div>
+        <span class="file-tag tag-frontend">COMPONENTE</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Cria as <strong>janelas flutuantes (popups)</strong> usadas em todo o sistema para formulários de criação e edição. Tem fundo escurecido, barra de título e botão X para fechar. Suporta 4 tamanhos: sm (pequeno), md (médio), lg (grande), xl (extra grande). Clicar fora da janela também fecha.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>z-index</strong>50 (padrão)</div>
+          <div class="file-detail"><strong>Tamanhos</strong>sm=448px, md=512px, lg=672px, xl=896px</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OsPdf.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">📄</div>
+        <div class="file-path">src/components/OsPdf.tsx</div>
+        <span class="file-tag tag-frontend">COMPONENTE</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          <strong>Gerador de PDF</strong> profissional usando a biblioteca @react-pdf/renderer. Cria documentos A4 com: cabeçalho com logo V9, dados do cliente e veículo, tabela de serviços/peças com totais, seção de observações e área de assinatura. Tem dois modos:
+        </div>
+        <ul>
+          <li><strong>Com itens:</strong> Exibe tabela de serviços/peças realizados</li>
+          <li><strong>Sem itens (recebimento):</strong> Exibe comprovante de entrada do veículo com placa, modelo e ano explícitos</li>
+        </ul>
+        <div class="file-details">
+          <div class="file-detail"><strong>Biblioteca</strong>@react-pdf/renderer v4</div>
+          <div class="file-detail"><strong>Formato</strong>A4, fontes Helvetica</div>
+          <div class="file-detail"><strong>Cor principal</strong>#356682 (azul petróleo)</div>
+          <div class="file-detail"><strong>Assinatura</strong>Sempre visível na OS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PÁGINA 7 — PÁGINAS -->
+<div class="page page-break">
+
+  <!-- 8. PÁGINAS DO SISTEMA -->
+  <div class="section" id="paginas">
+    <div class="section-header">
+      <div class="section-icon">📱</div>
+      <div class="section-title">8. Páginas do Sistema (src/pages/)</div>
+    </div>
+
+    <!-- Login.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🔑</div>
+        <div class="file-path">src/pages/Login.tsx</div>
+        <span class="file-tag tag-frontend">PÁGINA</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Tela de acesso ao sistema. Exibe formulário com campos de usuário e senha. Ao submeter, envia para o servidor que valida as credenciais e retorna um token JWT. Em caso de erro, exibe mensagem vermelha. O botão de olho mostra/oculta a senha digitada.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>Login padrão</strong>user</div>
+          <div class="file-detail"><strong>Senha padrão</strong>user123</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">📊</div>
+        <div class="file-path">src/pages/Dashboard.tsx</div>
+        <span class="file-tag tag-frontend">PÁGINA</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Painel principal com visão geral da oficina. Busca os dados do servidor ao carregar e exibe: 4 cards de resumo (orçamentos abertos, OS concluídas no mês, aguardando aprovação, veículos na oficina) e lista das últimas 6 OS/orçamentos criados com status e valor.
+        </div>
+      </div>
+    </div>
+
+    <!-- Clients.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">👥</div>
+        <div class="file-path">src/pages/Clients.tsx</div>
+        <span class="file-tag tag-frontend">PÁGINA</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Gestão completa de clientes. Exibe tabela com todos os clientes e permite: criar novo (modal), editar (modal), excluir (confirmação). Busca em tempo real por nome, CPF ou telefone. O CPF/CNPJ é opcional — somente o nome é obrigatório.
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicles.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🚗</div>
+        <div class="file-path">src/pages/Vehicles.tsx</div>
+        <span class="file-tag tag-frontend">PÁGINA</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Gestão de veículos. Cada veículo é vinculado a um cliente. Campos: placa (única), marca, modelo, ano, cor, quilometragem e chassi (opcional). Busca por placa, marca, modelo ou nome do cliente.
+        </div>
+      </div>
+    </div>
+
+    <!-- Technicians.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">🔧</div>
+        <div class="file-path">src/pages/Technicians.tsx</div>
+        <span class="file-tag tag-frontend">PÁGINA</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Gestão de técnicos com acesso ao sistema. Permite criar técnicos com username, nome, senha e cargo (admin/técnico). Possui toggle de ativo/inativo — técnicos inativos não podem fazer login mas seus dados históricos são preservados.
+        </div>
+      </div>
+    </div>
+
+    <!-- Catalog.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">📚</div>
+        <div class="file-path">src/pages/Catalog.tsx</div>
+        <span class="file-tag tag-frontend">PÁGINA</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          Cadastro de serviços e peças com preços. Funciona como uma tabela de preços padrão da oficina. Cada item tem: descrição, tipo (Serviço ou Peça), valor de custo, valor de venda e estoque. O estoque fica vermelho quando ≤ 0, amarelo quando ≤ 5 e verde quando > 5. Itens do catálogo podem ser selecionados diretamente na tela de OS/Orçamento.
+        </div>
+        <div class="file-details">
+          <div class="file-detail"><strong>Integração</strong>Picker na tela de OS/Orçamento</div>
+          <div class="file-detail"><strong>Filtro</strong>Todos / Serviços / Peças</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OsPage.tsx -->
+    <div class="file-card">
+      <div class="file-header">
+        <div class="file-icon">📋</div>
+        <div class="file-path">src/pages/OsPage.tsx</div>
+        <span class="file-tag tag-frontend">PÁGINA</span>
+      </div>
+      <div class="file-body">
+        <div class="file-desc">
+          <strong>A página mais completa do sistema.</strong> Usada tanto para Orçamentos quanto para Ordens de Serviço (o mesmo arquivo, comportamento diferente conforme o tipo). Funcionalidades:
+        </div>
+        <ul>
+          <li>Lista todas as OS/Orçamentos com busca por número, cliente ou placa</li>
+          <li>Formulário para criar/editar com cliente, veículo, status e defeito relatado</li>
+          <li>Tabela de itens (serviços/peças) com botão 📖 para selecionar do catálogo</li>
+          <li>Cálculo automático de totais por item e total geral</li>
+          <li>Vínculo de técnico por item de serviço (apenas na OS)</li>
+          <li>Permite salvar sem itens (apenas recebimento do veículo)</li>
+          <li>Botão de impressão/PDF — abre visualizador do documento</li>
+          <li>Botão WhatsApp — abre WhatsApp com mensagem pré-formatada</li>
+        </ul>
+        <div class="file-details">
+          <div class="file-detail"><strong>Tipo BUDGET</strong>Orçamento — rota /budgets</div>
+          <div class="file-detail"><strong>Tipo OS</strong>Ordem de Serviço — rota /os</div>
+          <div class="file-detail"><strong>Status disponíveis</strong>Aberto, Em Andamento, Aguard. Aprovação, Concluído, Cancelado</div>
+          <div class="file-detail"><strong>WhatsApp</strong>wa.me/55{telefone}?text=...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PÁGINA 8 — API -->
+<div class="page page-break">
+
+  <!-- 9. ROTAS DA API -->
+  <div class="section" id="api">
+    <div class="section-header">
+      <div class="section-icon">🔗</div>
+      <div class="section-title">9. Rotas da API (Comunicação Tela ↔ Servidor)</div>
+    </div>
+
+    <div class="info-box">
+      <div class="box-title">O que são rotas de API?</div>
+      São os "endereços" que a tela usa para pedir informações ao servidor. Toda operação (criar cliente, buscar OS, etc.) passa por uma dessas rotas. Todas (exceto login) exigem o token JWT no cabeçalho da requisição.
+    </div>
+
+    <h3>Autenticação</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Método</th><th>Rota</th><th>O que faz</th></tr></thead>
+        <tbody>
+          <tr><td><span class="method post">POST</span></td><td>/api/auth/login</td><td>Valida usuário e senha, retorna token JWT. <strong>Não exige autenticação.</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Clientes</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Método</th><th>Rota</th><th>O que faz</th></tr></thead>
+        <tbody>
+          <tr><td><span class="method get">GET</span></td><td>/api/clients</td><td>Retorna lista de todos os clientes com seus veículos</td></tr>
+          <tr><td><span class="method post">POST</span></td><td>/api/clients</td><td>Cria novo cliente. CPF/CNPJ vazio é salvo como nulo.</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td>/api/clients/:id</td><td>Atualiza dados de um cliente pelo ID</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td>/api/clients/:id</td><td>Remove um cliente do banco</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Veículos</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Método</th><th>Rota</th><th>O que faz</th></tr></thead>
+        <tbody>
+          <tr><td><span class="method get">GET</span></td><td>/api/vehicles</td><td>Lista todos os veículos com dados do cliente vinculado</td></tr>
+          <tr><td><span class="method post">POST</span></td><td>/api/vehicles</td><td>Cadastra novo veículo. Placa deve ser única.</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td>/api/vehicles/:id</td><td>Atualiza dados do veículo</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td>/api/vehicles/:id</td><td>Remove veículo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Ordens de Serviço / Orçamentos</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Método</th><th>Rota</th><th>O que faz</th></tr></thead>
+        <tbody>
+          <tr><td><span class="method get">GET</span></td><td>/api/os</td><td>Lista todas as OS e Orçamentos com cliente, veículo e itens</td></tr>
+          <tr><td><span class="method post">POST</span></td><td>/api/os</td><td>Cria nova OS/Orçamento. Gera número sequencial automático.</td></tr>
+          <tr><td><span class="method get">GET</span></td><td>/api/os/:id</td><td>Busca uma OS específica pelo ID</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td>/api/os/:id</td><td>Atualiza OS. Apaga e recria os itens inteiros.</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td>/api/os/:id</td><td>Remove OS e seus itens (cascade)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Técnicos, Estatísticas e Catálogo</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Método</th><th>Rota</th><th>O que faz</th></tr></thead>
+        <tbody>
+          <tr><td><span class="method get">GET</span></td><td>/api/stats</td><td>Retorna totais para o Dashboard (orçamentos, OS, veículos)</td></tr>
+          <tr><td><span class="method get">GET</span></td><td>/api/technicians</td><td>Lista técnicos (sem expor senha)</td></tr>
+          <tr><td><span class="method post">POST</span></td><td>/api/technicians</td><td>Cria técnico com senha criptografada (bcrypt)</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td>/api/technicians/:id</td><td>Atualiza técnico. Se nova senha informada, re-criptografa.</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td>/api/technicians/:id</td><td>Desativa técnico (não exclui, preserva histórico)</td></tr>
+          <tr><td><span class="method get">GET</span></td><td>/api/catalog</td><td>Lista itens do catálogo ordenados por descrição</td></tr>
+          <tr><td><span class="method post">POST</span></td><td>/api/catalog</td><td>Cria item no catálogo</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td>/api/catalog/:id</td><td>Atualiza item do catálogo</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td>/api/catalog/:id</td><td>Exclui item do catálogo</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PÁGINA 9 — COMANDOS -->
+<div class="page page-break">
+
+  <!-- 10. COMO INICIAR -->
+  <div class="section" id="comandos">
+    <div class="section-header">
+      <div class="section-icon">▶️</div>
+      <div class="section-title">10. Como Iniciar o Sistema</div>
+    </div>
+
+    <div class="warn-box">
+      <div class="box-title">⚠️ Pré-requisito</div>
+      É necessário ter o Node.js instalado no computador. Para verificar, abra o Prompt de Comando e digite: <code>node --version</code>. Se aparecer um número (ex: v20.0.0), está instalado.
+    </div>
+
+    <h3>Primeira execução (instalação)</h3>
+    <div class="cmd">
+      <div class="cmd-comment"># 1. Instalar dependências</div>
+      npm install<br><br>
+      <div class="cmd-comment"># 2. Criar o banco de dados</div>
+      npx prisma migrate dev<br><br>
+      <div class="cmd-comment"># 3. Criar usuário admin (user/user123) e dados de exemplo</div>
+      node prisma/seed.cjs
+    </div>
+
+    <h3>Uso diário</h3>
+    <p>Abrir <strong>dois</strong> terminais (Prompt de Comando) na pasta do projeto:</p>
+
+    <div class="cmd">
+      <div class="cmd-comment"># Terminal 1 — Servidor backend (porta 3001)</div>
+      npm run server<br><br>
+      <div class="cmd-comment"># Terminal 2 — Frontend (porta 5173)</div>
+      npm run dev
+    </div>
+
+    <div class="success-box">
+      <div class="box-title">✅ Depois de subir os dois servidores</div>
+      Abrir o navegador e acessar: <strong>http://localhost:5173</strong><br>
+      Fazer login com: usuário <strong>user</strong> / senha <strong>user123</strong>
+    </div>
+
+    <h3>Outros comandos úteis</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Comando</th><th>Para que serve</th></tr></thead>
+        <tbody>
+          <tr><td><code>npm run build</code></td><td>Compila o frontend para produção (gera pasta dist/)</td></tr>
+          <tr><td><code>npx prisma studio</code></td><td>Abre interface visual do banco de dados no navegador</td></tr>
+          <tr><td><code>npx prisma migrate dev</code></td><td>Aplica mudanças no esquema do banco</td></tr>
+          <tr><td><code>npx prisma generate</code></td><td>Regenera o cliente Prisma após mudar o schema</td></tr>
+          <tr><td><code>node prisma/seed.cjs</code></td><td>Recria dados iniciais (usuário admin)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Portas utilizadas</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Porta</th><th>Serviço</th><th>Endereço</th></tr></thead>
+        <tbody>
+          <tr><td><strong>5173</strong></td><td>Frontend (Vite)</td><td>http://localhost:5173</td></tr>
+          <tr><td><strong>3001</strong></td><td>Backend (Express)</td><td>http://localhost:3001</td></tr>
+          <tr><td><strong>5555</strong></td><td>Prisma Studio (opcional)</td><td>http://localhost:5555</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 11. FLUXO DE USO -->
+  <div class="section" id="fluxo">
+    <div class="section-header">
+      <div class="section-icon">🔄</div>
+      <div class="section-title">11. Fluxo de Uso Típico</div>
+    </div>
+
+    <h3>Para receber um veículo na oficina:</h3>
+    <div class="flow">
+      <div class="flow-step">1. Cadastrar cliente</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">2. Cadastrar veículo</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">3. Abrir OS</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">4. Preencher defeito</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">5. Imprimir comprovante</div>
+    </div>
+
+    <h3>Para criar um orçamento:</h3>
+    <div class="flow">
+      <div class="flow-step">1. Abrir Orçamentos</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">2. Selecionar cliente/veículo</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">3. Adicionar itens (📖 catálogo)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">4. Salvar</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">5. Enviar PDF ou WhatsApp</div>
+    </div>
+
+    <h3>Para fechar uma OS:</h3>
+    <div class="flow">
+      <div class="flow-step">1. Abrir a OS existente</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">2. Adicionar serviços/peças</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">3. Vincular técnico</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">4. Status: Concluído</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">5. Imprimir OS final</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ PÁGINA 10 — GLOSSÁRIO -->
+<div class="page page-break">
+
+  <!-- 12. GLOSSÁRIO -->
+  <div class="section" id="glossario">
+    <div class="section-header">
+      <div class="section-icon">📖</div>
+      <div class="section-title">12. Glossário — Termos Técnicos Explicados</div>
+    </div>
+
+    <div class="glossary-item">
+      <div class="glossary-term">React</div>
+      <div class="glossary-def">Biblioteca JavaScript para criar interfaces visuais. Divide a tela em "componentes" reutilizáveis (como peças de Lego).</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">TypeScript</div>
+      <div class="glossary-def">Versão do JavaScript com tipagem — define que um campo "idade" só pode ser número, evitando erros. O código é "traduzido" para JavaScript antes de rodar.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Node.js</div>
+      <div class="glossary-def">Permite rodar JavaScript no computador (não só no navegador). É a base do servidor backend.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Express</div>
+      <div class="glossary-def">Framework para Node.js que facilita criar servidores HTTP. Define as rotas (endereços) que o frontend pode chamar.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Prisma ORM</div>
+      <div class="glossary-def">Ferramenta que traduz comandos TypeScript em SQL, permitindo manipular o banco sem escrever SQL diretamente. ORM = Object-Relational Mapping.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">SQLite</div>
+      <div class="glossary-def">Banco de dados que fica em um único arquivo no HD (dev.db). Ideal para sistemas locais por ser simples e não precisar de servidor separado.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">JWT</div>
+      <div class="glossary-def">JSON Web Token — uma "chave digital" gerada pelo servidor após o login. A tela envia essa chave em cada pedido para provar que o usuário está autenticado.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">API REST</div>
+      <div class="glossary-def">Conjunto de regras para comunicação entre sistemas via HTTP. O frontend "chama" endereços (rotas) do backend para buscar ou enviar dados em formato JSON.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Axios</div>
+      <div class="glossary-def">Biblioteca que facilita fazer chamadas HTTP no JavaScript. Usada no arquivo api.ts para comunicar o frontend com o backend.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Tailwind CSS</div>
+      <div class="glossary-def">Framework de estilos CSS. Em vez de escrever CSS separado, as classes são aplicadas diretamente no HTML (ex: "bg-blue-500" deixa o fundo azul).</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Vite</div>
+      <div class="glossary-def">Ferramenta que serve o frontend em desenvolvimento (npm run dev) e empacota tudo para produção (npm run build). É rápido e moderno.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Migration (Migração)</div>
+      <div class="glossary-def">Arquivo SQL gerado quando o schema do banco é alterado. Registra o histórico de mudanças e atualiza o banco de dados para a nova estrutura.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Hash de senha</div>
+      <div class="glossary-def">As senhas nunca são salvas em texto puro no banco. São transformadas em um código irreversível (hash) usando bcrypt. Mesmo quem acessa o banco não consegue descobrir a senha original.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">localhost</div>
+      <div class="glossary-def">Endereço que aponta para o próprio computador. "localhost:5173" significa: porta 5173 neste mesmo computador.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">Context (React)</div>
+      <div class="glossary-def">Mecanismo para compartilhar dados entre componentes sem passar manualmente por cada um. O AuthContext compartilha os dados de login com todo o sistema.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">CRUD</div>
+      <div class="glossary-def">Create, Read, Update, Delete — as quatro operações básicas de qualquer sistema: criar, ler, editar e excluir registros.</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">z-index</div>
+      <div class="glossary-def">Propriedade CSS que define qual elemento fica "em cima" de outro na tela. Número maior = fica na frente. O picker de catálogo usa z-60 para ficar acima do modal (z-50).</div>
+    </div>
+    <div class="glossary-item">
+      <div class="glossary-term">localStorage</div>
+      <div class="glossary-def">Área de armazenamento do navegador (como um "post-it" digital). O token JWT é salvo aqui para que o login persista após fechar e reabrir o navegador.</div>
+    </div>
+  </div>
+
+  <!-- RODAPÉ -->
+  <div style="margin-top: 60px; padding-top: 24px; border-top: 2px solid #356682; display: flex; justify-content: space-between; align-items: center; color: #94a3b8; font-size: 11px;">
+    <div><strong style="color: #356682;">V9 OS</strong> — Sistema de Gestão de Oficina</div>
+    <div>V9 INFORMÁTICA LTDA · (37) 4141-0341 · Divinópolis - MG</div>
+    <div>Março 2026</div>
+  </div>
+</div>
+
+<script>
+  // Botão de impressão automático
+  window.addEventListener('load', () => {
+    const btn = document.createElement('button');
+    btn.textContent = '🖨️ Imprimir / Salvar como PDF';
+    btn.style.cssText = 'position:fixed;top:16px;right:16px;z-index:9999;background:#356682;color:white;border:none;padding:10px 18px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
+    btn.onclick = () => window.print();
+    document.body.appendChild(btn);
+  });
+</script>
+
+</body>
+</html>

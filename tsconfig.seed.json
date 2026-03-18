@@ -1,0 +1,9 @@
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS",
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true
+    }
+  }
+}

@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Technician {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("technician") // technician, admin
+  active       Boolean   @default(true)
+
+  osItems      OSItem[]
+  auditLogs    AuditLog[]
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Client {
+  id        Int        @id @default(autoincrement())
+  name      String
+  cpfCnpj   String?    @unique
+  phone     String
+  email     String?
+  address   String?
+
+  vehicles  Vehicle[]
+  budgets   OSBudget[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Vehicle {
+  id        Int        @id @default(autoincrement())
+  plate     String     @unique
+  brand     String
+  model     String
+  year      Int
+  color     String
+  chassis   String?
+  mileage   Int
+
+  clientId  Int
+  client    Client     @relation(fields: [clientId], references: [id])
+
+  budgets   OSBudget[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model OSBudget {
+  id             Int       @id @default(autoincrement())
+  number         Int       @unique
+  type           String    @default("BUDGET") // BUDGET or OS
+  status         String    @default("OPEN") // OPEN, IN_PROGRESS, WAITING, COMPLETED, CANCELLED
+  date           DateTime  @default(now())
+
+  clientId       Int
+  client         Client    @relation(fields: [clientId], references: [id])
+
+  vehicleId      Int
+  vehicle        Vehicle   @relation(fields: [vehicleId], references: [id])
+
+  defectReported String?
+  totalAmount    Float     @default(0)
+  notes          String?
+
+  items          OSItem[]
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model OSItem {
+  id           Int         @id @default(autoincrement())
+  osBudgetId   Int
+  osBudget     OSBudget    @relation(fields: [osBudgetId], references: [id], onDelete: Cascade)
+
+  description  String
+  quantity     Float       @default(1)
+  unitPrice    Float
+  totalPrice   Float
+  type         String      @default("SERVICE") // SERVICE or PART
+
+  technicianId Int?
+  technician   Technician? @relation(fields: [technicianId], references: [id], onDelete: SetNull)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model AuditLog {
+  id           Int        @id @default(autoincrement())
+  technicianId Int
+  technician   Technician @relation(fields: [technicianId], references: [id])
+
+  action       String
+  entity       String
+  entityId     Int
+  details      String?
+  timestamp    DateTime   @default(now())
+}
+
+model ServiceItem {
+  id          Int      @id @default(autoincrement())
+  description String
+  type        String   @default("SERVICE") // SERVICE or PART
+  costPrice   Float    @default(0)
+  unitPrice   Float    @default(0)
+  stock       Int      @default(0)
+  active      Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+

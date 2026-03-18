@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/master"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Empresa {
+  id            Int      @id @default(autoincrement())
+  nome          String
+  endereco      String?
+  cnpj          String   @unique
+  telefone      String?
+  email         String?
+  data_cadastro DateTime @default(now())
+  observacao    String?
+  ativo         Boolean  @default(true)
+  banco_dados   String   // Nome do arquivo .db (ex: 1165592000164_OS.db)
+  
+  // Usuario administrador inicial da empresa (Master da empresa)
+  usuario_admin String
+  senha_admin   String
+
+  @@map("empresas")
+}
+
+model Administrador {
+  id        Int      @id @default(autoincrement())
+  usuario   String   @unique @default("Master")
+  senha     String   // Belvedere640@
+  nome      String   @default("Administrador Root")
+  
+  @@map("administradores")
+}

@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/tenant"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Usuario {
+  id            Int         @id @default(autoincrement())
+  usuario       String      @unique
+  nome          String
+  senha         String      // Hash da senha
+  funcao        String      @default("tecnico") // tecnico, gerente, admin
+  permissoes    String?     // JSON ou string delimitada para controle de acesso (Ex: "vendas,financeiro,usuarios")
+  ativo         Boolean     @default(true)
+  
+  itens_os      ItemOS[]
+  auditorias    Auditoria[]
+  
+  criado_em     DateTime    @default(now())
+  atualizado_em DateTime    @updatedAt
+
+  @@map("usuarios")
+}
+
+model Cliente {
+  id         Int          @id @default(autoincrement())
+  nome       String
+  cpf_cnpj   String?      @unique
+  telefone   String
+  email      String?
+  endereco   String?
+  
+  veiculos   Veiculo[]
+  orcamentos OrcamentoOS[]
+  
+  criado_em  DateTime     @default(now())
+  atualizado_em DateTime  @updatedAt
+
+  @@map("clientes")
+}
+
+model Veiculo {
+  id            Int           @id @default(autoincrement())
+  placa         String        @unique
+  marca         String
+  modelo        String
+  ano           Int
+  cor           String
+  chassis       String?
+  quilometragem Int
+  
+  cliente_id    Int
+  cliente       Cliente       @relation(fields: [cliente_id], references: [id])
+  
+  orcamentos    OrcamentoOS[]
+  
+  criado_em     DateTime      @default(now())
+  atualizado_em DateTime      @updatedAt
+
+  @@map("veiculos")
+}
+
+model OrcamentoOS {
+  id                Int       @id @default(autoincrement())
+  numero            Int       @unique
+  tipo              String    @default("ORCAMENTO") // ORCAMENTO ou OS
+  status            String    @default("ABERTO")    // ABERTO, ANDAMENTO, CONCLUIDO, CANCELADO
+  data_abertura     DateTime  @default(now())
+  
+  cliente_id        Int
+  cliente           Cliente   @relation(fields: [cliente_id], references: [id])
+  
+  veiculo_id        Int
+  veiculo           Veiculo   @relation(fields: [veiculo_id], references: [id])
+  
+  defeito_relatado  String?
+  total_geral       Float     @default(0)
+  condicao_pagamento String?   // Regra 3.5: Formas de pagamento
+  observacoes       String?
+  
+  itens             ItemOS[]
+  
+  criado_por        Int?      // Auditoria: ID do usuario que incluiu
+  alterado_por      Int?      // Auditoria: ID do ultimo usuario que alterou
+  
+  criado_em         DateTime  @default(now())
+  atualizado_em     DateTime  @updatedAt
+
+  @@map("orcamentos_os")
+}
+
+model ItemOS {
+  id               Int          @id @default(autoincrement())
+  orcamento_os_id  Int
+  orcamento_os     OrcamentoOS  @relation(fields: [orcamento_os_id], references: [id], onDelete: Cascade)
+  
+  descricao        String
+  quantidade       Float        @default(1)
+  preco_unitario   Float
+  preco_total      Float
+  tipo             String       @default("SERVICO") // PECA ou SERVICO
+  
+  usuario_id       Int?         // Tecnico que executou o serviÃ§o/item
+  usuario          Usuario?     @relation(fields: [usuario_id], references: [id])
+  
+  criado_em        DateTime     @default(now())
+  atualizado_em    DateTime     @updatedAt
+
+  @@map("itens_os")
+}
+
+model ProdutoServico {
+  id             Int      @id @default(autoincrement())
+  descricao      String
+  tipo           String   @default("SERVICO") // PECA ou SERVICO
+  preco_custo    Float    @default(0)
+  preco_venda    Float    @default(0)
+  estoque        Int      @default(0)
+  ativo          Boolean  @default(true)
+  
+  criado_em      DateTime @default(now())
+  atualizado_em  DateTime @updatedAt
+
+  @@map("produtos_servicos")
+}
+
+model Auditoria {
+  id           Int      @id @default(autoincrement())
+  usuario_id   Int
+  usuario      Usuario  @relation(fields: [usuario_id], references: [id])
+  
+  acao         String   // INCLUSAO, ALTERACAO, EXCLUSAO, LOGIN
+  entidade     String   // Clientes, Veiculos, Orcamentos, etc.
+  entidade_id  Int?
+  detalhes     String?  // JSON ou string com o que mudou
+  data_hora    DateTime @default(now())
+
+  @@map("auditoria")
+}
+
