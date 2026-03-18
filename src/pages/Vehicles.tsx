@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, Pencil, Trash2, Car } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, Car, UserPlus } from 'lucide-react';
 import api from '../lib/api';
 import { Modal } from '../components/Modal';
 import type { Vehicle, Client } from '../types';
@@ -10,6 +10,9 @@ interface VehicleForm {
 }
 const EMPTY: VehicleForm = { plate: '', brand: '', model: '', year: '', color: '', chassis: '', mileage: '', clientId: '' };
 
+interface NewClientForm { name: string; phone: string; cpfCnpj: string; email: string; }
+const EMPTY_CLIENT: NewClientForm = { name: '', phone: '', cpfCnpj: '', email: '' };
+
 export const Vehicles = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -19,6 +22,10 @@ export const Vehicles = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showNewClient, setShowNewClient] = useState(false);
+  const [newClient, setNewClient] = useState<NewClientForm>({ ...EMPTY_CLIENT });
+  const [savingClient, setSavingClient] = useState(false);
+  const [clientError, setClientError] = useState('');
 
   const load = useCallback(async () => {
     const [v, c] = await Promise.all([api.get('/vehicles'), api.get('/clients')]);
@@ -27,10 +34,36 @@ export const Vehicles = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const openCreate = () => { setForm({ ...EMPTY }); setError(''); setModal('create'); };
+  const openCreate = () => {
+    setForm({ ...EMPTY }); setError(''); setShowNewClient(false);
+    setNewClient({ ...EMPTY_CLIENT }); setClientError(''); setModal('create');
+  };
+
+  const handleSaveNewClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClient.name.trim()) { setClientError('Nome é obrigatório'); return; }
+    setSavingClient(true); setClientError('');
+    try {
+      const { data } = await api.post('/clients', {
+        name: newClient.name, phone: newClient.phone,
+        cpfCnpj: newClient.cpfCnpj || undefined, email: newClient.email || undefined,
+      });
+      // Recarrega clientes e seleciona o novo
+      const res = await api.get('/clients');
+      setClients(res.data);
+      const created = res.data.find((c: Client) => c.id === data.id) || res.data[res.data.length - 1];
+      setForm(p => ({ ...p, clientId: String(created.id) }));
+      setShowNewClient(false);
+      setNewClient({ ...EMPTY_CLIENT });
+    } catch (err: any) {
+      setClientError(err.response?.data?.message || 'Erro ao cadastrar cliente');
+    } finally {
+      setSavingClient(false);
+    }
+  };
   const openEdit = (v: Vehicle) => {
     setForm({ plate: v.plate, brand: v.brand, model: v.model, year: String(v.year), color: v.color, chassis: v.chassis || '', mileage: String(v.mileage), clientId: String(v.clientId) });
-    setEditId(v.id); setError(''); setModal('edit');
+    setEditId(v.id); setError(''); setShowNewClient(false); setNewClient({ ...EMPTY_CLIENT }); setClientError(''); setModal('edit');
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -132,12 +165,39 @@ export const Vehicles = () => {
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500 uppercase" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Cliente *</label>
-                <select value={form.clientId} onChange={F('clientId')} required
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500">
-                  <option value="">Selecione...</option>
-                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-slate-700">Cliente *</label>
+                  <button type="button" onClick={() => { setShowNewClient(v => !v); setClientError(''); }}
+                    className="flex items-center gap-1 text-xs text-petroleum-600 hover:text-petroleum-800 font-semibold">
+                    <UserPlus className="w-3.5 h-3.5" />
+                    {showNewClient ? 'Cancelar' : 'Novo cliente'}
+                  </button>
+                </div>
+                {!showNewClient ? (
+                  <select value={form.clientId} onChange={F('clientId')} required
+                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500">
+                    <option value="">Selecione...</option>
+                    {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                ) : (
+                  <div className="border border-petroleum-200 bg-petroleum-50/40 rounded-xl p-3 space-y-2">
+                    <p className="text-xs font-bold text-petroleum-700 uppercase tracking-wider">Cadastrar novo cliente</p>
+                    {clientError && <p className="text-xs text-red-600">{clientError}</p>}
+                    <input value={newClient.name} onChange={e => setNewClient(p => ({ ...p, name: e.target.value }))}
+                      placeholder="Nome completo *"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500 bg-white" />
+                    <input value={newClient.phone} onChange={e => setNewClient(p => ({ ...p, phone: e.target.value }))}
+                      placeholder="Telefone"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500 bg-white" />
+                    <input value={newClient.cpfCnpj} onChange={e => setNewClient(p => ({ ...p, cpfCnpj: e.target.value }))}
+                      placeholder="CPF / CNPJ (opcional)"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500 bg-white" />
+                    <button type="button" onClick={handleSaveNewClient} disabled={savingClient}
+                      className="w-full py-2 bg-petroleum-600 hover:bg-petroleum-700 disabled:opacity-60 text-white text-xs font-bold rounded-lg transition-colors">
+                      {savingClient ? 'Salvando...' : 'Salvar cliente e selecionar'}
+                    </button>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Marca *</label>
