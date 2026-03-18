@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wrench, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Wrench, Lock, User, Eye, EyeOff, Building2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ cnpj: '', username: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +16,7 @@ export const Login = () => {
     setError('');
     setLoading(true);
     try {
-      await login(form.username, form.password);
+      await login(form.username, form.password, form.cnpj || undefined);
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao fazer login');
@@ -48,6 +48,22 @@ export const Login = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                CNPJ / CPF <span className="text-slate-400 font-normal">(deixe em branco para acesso Root)</span>
+              </label>
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={form.cnpj}
+                  onChange={e => setForm(p => ({ ...p, cnpj: e.target.value }))}
+                  placeholder="00.000.000/0001-00"
+                  className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-petroleum-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Usuário</label>
               <div className="relative">
