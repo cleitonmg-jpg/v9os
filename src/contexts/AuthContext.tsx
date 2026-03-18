@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import api from '../lib/api';
 
-interface User { id: number; name: string; username: string; role: string; }
+interface User { id: number; name: string; username: string; role: string; cnpj?: string | null; isRoot?: boolean; }
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, cnpj?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -17,8 +17,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return s ? JSON.parse(s) : null;
   });
 
-  const login = useCallback(async (username: string, password: string) => {
-    const { data } = await api.post('/auth/login', { username, password });
+  const login = useCallback(async (username: string, password: string, cnpj?: string) => {
+    const { data } = await api.post('/auth/login', { username, password, cnpj: cnpj || undefined });
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
