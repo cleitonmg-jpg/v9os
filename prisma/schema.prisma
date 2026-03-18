@@ -7,130 +7,130 @@ datasource db {
 }
 
 model Tecnico {
-  id            Int            @id @default(autoincrement())
-  usuario       String         @unique
-  nome          String
-  senhaHash     String
-  cargo         String         @default("technician")
-  ativo         Boolean        @default(true)
+  id           Int            @id @default(autoincrement())
+  username     String         @unique @map("usuario")
+  name         String         @map("nome")
+  passwordHash String         @map("senhaHash")
+  role         String         @default("technician") @map("cargo")
+  active       Boolean        @default(true) @map("ativo")
 
-  itensOrdem    ItemOrdem[]
-  logsAuditoria LogAuditoria[]
+  items        ItemOrdem[]
+  auditLogs    LogAuditoria[]
 
-  criadoEm     DateTime       @default(now())
-  atualizadoEm DateTime       @updatedAt
+  createdAt    DateTime       @default(now()) @map("criadoEm")
+  updatedAt    DateTime       @updatedAt @map("atualizadoEm")
 
   @@map("tecnicos")
 }
 
 model Cliente {
-  id            Int            @id @default(autoincrement())
-  nome          String
-  cpfCnpj       String?        @unique
-  telefone      String
-  email         String?
-  endereco      String?
+  id        Int            @id @default(autoincrement())
+  name      String         @map("nome")
+  cpfCnpj   String?        @unique
+  phone     String         @map("telefone")
+  email     String?
+  address   String?        @map("endereco")
 
-  veiculos      Veiculo[]
-  ordensServico OrdemServico[]
+  vehicles  Veiculo[]
+  orders    OrdemServico[]
 
-  criadoEm     DateTime       @default(now())
-  atualizadoEm DateTime       @updatedAt
+  createdAt DateTime       @default(now()) @map("criadoEm")
+  updatedAt DateTime       @updatedAt @map("atualizadoEm")
 
   @@map("clientes")
 }
 
 model Veiculo {
-  id            Int            @id @default(autoincrement())
-  placa         String         @unique
-  marca         String
-  modelo        String
-  ano           Int
-  cor           String
-  chassi        String?
-  quilometragem Int
+  id        Int            @id @default(autoincrement())
+  plate     String         @unique @map("placa")
+  brand     String         @map("marca")
+  model     String         @map("modelo")
+  year      Int            @map("ano")
+  color     String         @map("cor")
+  chassis   String?        @map("chassi")
+  mileage   Int            @map("quilometragem")
 
-  clienteId     Int
-  cliente       Cliente        @relation(fields: [clienteId], references: [id])
+  clientId  Int            @map("clienteId")
+  client    Cliente        @relation(fields: [clientId], references: [id])
 
-  ordensServico OrdemServico[]
+  orders    OrdemServico[]
 
-  criadoEm     DateTime       @default(now())
-  atualizadoEm DateTime       @updatedAt
+  createdAt DateTime       @default(now()) @map("criadoEm")
+  updatedAt DateTime       @updatedAt @map("atualizadoEm")
 
   @@map("veiculos")
 }
 
 model OrdemServico {
-  id              Int         @id @default(autoincrement())
-  numero          Int         @unique
-  tipo            String      @default("BUDGET")
-  status          String      @default("OPEN")
-  data            DateTime    @default(now())
+  id             Int         @id @default(autoincrement())
+  number         Int         @unique @map("numero")
+  type           String      @default("BUDGET") @map("tipo")
+  status         String      @default("OPEN")
+  date           DateTime    @default(now()) @map("data")
 
-  clienteId       Int
-  cliente         Cliente     @relation(fields: [clienteId], references: [id])
+  clientId       Int         @map("clienteId")
+  client         Cliente     @relation(fields: [clientId], references: [id])
 
-  veiculoId       Int
-  veiculo         Veiculo     @relation(fields: [veiculoId], references: [id])
+  vehicleId      Int         @map("veiculoId")
+  vehicle        Veiculo     @relation(fields: [vehicleId], references: [id])
 
-  defeitoRelatado String?
-  valorTotal      Float       @default(0)
-  observacoes     String?
+  defectReported String?     @map("defeitoRelatado")
+  totalAmount    Float       @default(0) @map("valorTotal")
+  notes          String?     @map("observacoes")
 
-  itens           ItemOrdem[]
+  items          ItemOrdem[]
 
-  criadoEm     DateTime      @default(now())
-  atualizadoEm DateTime      @updatedAt
+  createdAt      DateTime    @default(now()) @map("criadoEm")
+  updatedAt      DateTime    @updatedAt @map("atualizadoEm")
 
   @@map("ordens_servico")
 }
 
 model ItemOrdem {
-  id             Int          @id @default(autoincrement())
-  ordemServicoId Int
-  ordemServico   OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  id         Int          @id @default(autoincrement())
+  orderId    Int          @map("ordemServicoId")
+  order      OrdemServico @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  descricao      String
-  quantidade     Float        @default(1)
-  precoUnitario  Float
-  precoTotal     Float
-  tipo           String       @default("SERVICE")
+  description String      @map("descricao")
+  quantity    Float       @default(1) @map("quantidade")
+  unitPrice   Float       @map("precoUnitario")
+  totalPrice  Float       @map("precoTotal")
+  type        String      @default("SERVICE") @map("tipo")
 
-  tecnicoId      Int?
-  tecnico        Tecnico?     @relation(fields: [tecnicoId], references: [id], onDelete: SetNull)
+  technicianId Int?       @map("tecnicoId")
+  technician   Tecnico?   @relation(fields: [technicianId], references: [id], onDelete: SetNull)
 
-  criadoEm     DateTime       @default(now())
-  atualizadoEm DateTime       @updatedAt
+  createdAt   DateTime    @default(now()) @map("criadoEm")
+  updatedAt   DateTime    @updatedAt @map("atualizadoEm")
 
   @@map("itens_ordem")
 }
 
 model LogAuditoria {
-  id         Int      @id @default(autoincrement())
-  tecnicoId  Int
-  tecnico    Tecnico  @relation(fields: [tecnicoId], references: [id])
+  id           Int      @id @default(autoincrement())
+  technicianId Int      @map("tecnicoId")
+  technician   Tecnico  @relation(fields: [technicianId], references: [id])
 
-  acao       String
-  entidade   String
-  entidadeId Int
-  detalhes   String?
-  dataHora   DateTime @default(now())
+  action       String   @map("acao")
+  entity       String   @map("entidade")
+  entityId     Int      @map("entidadeId")
+  details      String?  @map("detalhes")
+  timestamp    DateTime @default(now()) @map("dataHora")
 
   @@map("logs_auditoria")
 }
 
 model ItemCatalogo {
-  id            Int      @id @default(autoincrement())
-  descricao     String
-  tipo          String   @default("SERVICE")
-  precoCusto    Float    @default(0)
-  precoUnitario Float    @default(0)
-  estoque       Int      @default(0)
-  ativo         Boolean  @default(true)
+  id          Int      @id @default(autoincrement())
+  description String   @map("descricao")
+  type        String   @default("SERVICE") @map("tipo")
+  costPrice   Float    @default(0) @map("precoCusto")
+  unitPrice   Float    @default(0) @map("precoUnitario")
+  stock       Int      @default(0) @map("estoque")
+  active      Boolean  @default(true) @map("ativo")
 
-  criadoEm     DateTime @default(now())
-  atualizadoEm DateTime @updatedAt
+  createdAt   DateTime @default(now()) @map("criadoEm")
+  updatedAt   DateTime @updatedAt @map("atualizadoEm")
 
   @@map("itens_catalogo")
 }

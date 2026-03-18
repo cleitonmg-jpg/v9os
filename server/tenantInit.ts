@@ -183,8 +183,8 @@ async function criarBancaTenantPg(
   try {
     const senhaHash = await bcrypt.hash(senha, 10);
     await (prisma as any).tecnico.upsert({
-      where:  { usuario },
-      create: { usuario, nome: nomeAdmin, senhaHash, cargo: 'admin', ativo: true },
+      where:  { username: usuario },
+      create: { username: usuario, name: nomeAdmin, passwordHash: senhaHash, role: 'admin', active: true },
       update: {},
     });
     console.log(`[tenantInit] ✅ Admin "${usuario}" criado em "${dbName}".`);
@@ -244,8 +244,8 @@ async function criarBancaTenantMysql(
   try {
     const senhaHash = await bcrypt.hash(senha, 10);
     await (prisma as any).tecnico.upsert({
-      where:  { usuario },
-      create: { usuario, nome: nomeAdmin, senhaHash, cargo: 'admin', ativo: true },
+      where:  { username: usuario },
+      create: { username: usuario, name: nomeAdmin, passwordHash: senhaHash, role: 'admin', active: true },
       update: {},
     });
     console.log(`[tenantInit] ✅ Admin "${usuario}" criado em "${dbName}".`);

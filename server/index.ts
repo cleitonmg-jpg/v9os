@@ -90,15 +90,15 @@ const soRoot = (req: AuthRequest, res: Response, next: NextFunction) => {
 // ── Helper: registra auditoria no banco tenant ─────────────────────────────────
 async function registrarAuditoria(
   prisma: PrismaClient,
-  tecnicoId: number,
-  acao: string,
-  entidade: string,
-  entidadeId: number,
-  detalhes?: string,
+  technicianId: number,
+  action: string,
+  entity: string,
+  entityId: number,
+  details?: string,
 ) {
   try {
     await (prisma as any).logAuditoria.create({
-      data: { tecnicoId, acao, entidade, entidadeId, detalhes },
+      data: { technicianId, action, entity, entityId, details },
     });
   } catch {
     // Auditoria não deve impedir operações principais
@@ -152,15 +152,15 @@ app.post('/api/auth/login', async (req, res) => {
     if (!empresa.ativo) { res.status(401).json({ message: 'Empresa inativa. Entre em contato com o suporte.' }); return; }
 
     const prisma = getTenantPrisma(cnpjLimpo);
-    const user = await (prisma as any).tecnico.findUnique({ where: { usuario: username } });
-    if (!user || !user.ativo) { res.status(401).json({ message: 'Usuário não encontrado ou inativo' }); return; }
+    const user = await (prisma as any).tecnico.findUnique({ where: { username } });
+    if (!user || !user.active) { res.status(401).json({ message: 'Usuário não encontrado ou inativo' }); return; }
 
-    const valid = await bcrypt.compare(password, user.senhaHash);
+    const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) { res.status(401).json({ message: 'Senha incorreta' }); return; }
 
     const payload: TokenPayload = {
-      id: user.id, username: user.usuario,
-      role: user.cargo, name: user.nome,
+      id: user.id, username: user.username,
+      role: user.role, name: user.name,
       cnpj: cnpjLimpo, isRoot: false,
     };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
@@ -300,8 +300,8 @@ app.put('/api/admin/empresas/:id', auth, soRoot, async (req, res) => {
         try {
           const prisma = getTenantPrisma(String(emp.cnpj));
           await (prisma as any).tecnico.updateMany({
-            where: { usuario: String(emp.usuario_admin), cargo: 'admin' },
-            data: { senhaHash },
+            where: { username: String(emp.usuario_admin), role: 'admin' },
+            data: { passwordHash: senhaHash },
           });
         } catch (e) {
           console.warn('[admin/empresas PUT] Não foi possível atualizar senha no tenant:', e);
@@ -382,8 +382,8 @@ app.get('/api/admin/empresas/:id/usuarios', auth, soRoot, async (req, res) => {
     const cnpj = String(rows.rows[0].cnpj);
     const prisma = getTenantPrisma(cnpj);
     const tecnicos = await (prisma as any).tecnico.findMany({
-      select: { id: true, nome: true, usuario: true, cargo: true, ativo: true },
-      orderBy: { nome: 'asc' },
+      select: { id: true, name: true, username: true, role: true, active: true },
+      orderBy: { name: 'asc' },
     });
     res.json(tecnicos);
   } catch (e) {
@@ -409,7 +409,7 @@ const tenantAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
 app.get('/api/clients', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    res.json(await (prisma as any).cliente.findMany({ include: { veiculos: true }, orderBy: { nome: 'asc' } }));
+    res.json(await (prisma as any).cliente.findMany({ include: { vehicles: true }, orderBy: { name: 'asc' } }));
   } catch { res.status(500).json({ message: 'Erro ao buscar clientes' }); }
 });
 
@@ -418,7 +418,7 @@ app.post('/api/clients', tenantAuth, async (req: AuthRequest, res) => {
     const prisma = getTenantPrisma(req.user!.cnpj!);
     const data = { ...req.body, cpfCnpj: req.body.cpfCnpj?.trim() || null };
     const cliente = await (prisma as any).cliente.create({ data });
-    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'Cliente', cliente.id, `Cliente: ${cliente.nome}`);
+    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'Cliente', cliente.id, `Cliente: ${cliente.name}`);
     res.json(cliente);
   } catch (e: any) {
     if (e.code === 'P2002') { res.status(400).json({ message: 'CPF/CNPJ já cadastrado' }); return; }
@@ -429,10 +429,10 @@ app.post('/api/clients', tenantAuth, async (req: AuthRequest, res) => {
 app.put('/api/clients/:id', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    const { veiculos, ordensServico, criadoEm, atualizadoEm, id, ...rest } = req.body;
+    const { vehicles, orders, createdAt, updatedAt, id, ...rest } = req.body;
     const data = { ...rest, cpfCnpj: rest.cpfCnpj?.trim() || null };
     const cliente = await (prisma as any).cliente.update({ where: { id: Number(req.params.id) }, data });
-    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'Cliente', cliente.id, `Cliente: ${cliente.nome}`);
+    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'Cliente', cliente.id, `Cliente: ${cliente.name}`);
     res.json(cliente);
   } catch (e: any) {
     if (e.code === 'P2002') { res.status(400).json({ message: 'CPF/CNPJ já cadastrado' }); return; }
@@ -453,7 +453,7 @@ app.delete('/api/clients/:id', tenantAuth, async (req: AuthRequest, res) => {
 app.get('/api/vehicles', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    res.json(await (prisma as any).veiculo.findMany({ include: { cliente: true }, orderBy: { placa: 'asc' } }));
+    res.json(await (prisma as any).veiculo.findMany({ include: { client: true }, orderBy: { plate: 'asc' } }));
   } catch { res.status(500).json({ message: 'Erro ao buscar veículos' }); }
 });
 
@@ -461,7 +461,7 @@ app.post('/api/vehicles', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
     const veiculo = await (prisma as any).veiculo.create({ data: req.body });
-    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'Veiculo', veiculo.id, `Placa: ${veiculo.placa}`);
+    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'Veiculo', veiculo.id, `Placa: ${veiculo.plate}`);
     res.json(veiculo);
   } catch (e: any) {
     if (e.code === 'P2002') { res.status(400).json({ message: 'Placa já cadastrada' }); return; }
@@ -472,9 +472,9 @@ app.post('/api/vehicles', tenantAuth, async (req: AuthRequest, res) => {
 app.put('/api/vehicles/:id', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    const { cliente, ordensServico, criadoEm, atualizadoEm, id, ...data } = req.body;
+    const { client, orders, createdAt, updatedAt, id, ...data } = req.body;
     const veiculo = await (prisma as any).veiculo.update({ where: { id: Number(req.params.id) }, data });
-    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'Veiculo', veiculo.id, `Placa: ${veiculo.placa}`);
+    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'Veiculo', veiculo.id, `Placa: ${veiculo.plate}`);
     res.json(veiculo);
   } catch (e: any) {
     if (e.code === 'P2002') { res.status(400).json({ message: 'Placa já cadastrada' }); return; }
@@ -492,42 +492,42 @@ app.delete('/api/vehicles/:id', tenantAuth, async (req: AuthRequest, res) => {
 });
 
 // ── OS / Orçamentos ─────────────────────────────────────────────────────────────
-const osInclude = { cliente: true, veiculo: true, itens: { include: { tecnico: true } } };
+const osInclude = { client: true, vehicle: true, items: { include: { technician: true } } };
 
 const toItemData = (item: any) => ({
-  descricao: item.descricao,
-  quantidade: Number(item.quantidade),
-  precoUnitario: Number(item.precoUnitario),
-  precoTotal: Number(item.quantidade) * Number(item.precoUnitario),
-  tipo: item.tipo || 'SERVICE',
-  tecnicoId: item.tecnicoId ? Number(item.tecnicoId) : null,
+  description: item.description,
+  quantity: Number(item.quantity),
+  unitPrice: Number(item.unitPrice),
+  totalPrice: Number(item.quantity) * Number(item.unitPrice),
+  type: item.type || 'SERVICE',
+  technicianId: item.technicianId ? Number(item.technicianId) : null,
 });
 
 app.get('/api/os', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    res.json(await (prisma as any).ordemServico.findMany({ include: osInclude, orderBy: { data: 'desc' } }));
+    res.json(await (prisma as any).ordemServico.findMany({ include: osInclude, orderBy: { date: 'desc' } }));
   } catch { res.status(500).json({ message: 'Erro ao buscar OS' }); }
 });
 
 app.post('/api/os', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    const { itens, ...osData } = req.body;
-    const last = await (prisma as any).ordemServico.findFirst({ orderBy: { numero: 'desc' } });
-    const itemsData = (itens || []).map(toItemData);
+    const { items, ...osData } = req.body;
+    const last = await (prisma as any).ordemServico.findFirst({ orderBy: { number: 'desc' } });
+    const itemsData = (items || []).map(toItemData);
     const os = await (prisma as any).ordemServico.create({
       data: {
         ...osData,
-        numero: (last?.numero || 0) + 1,
-        valorTotal: itemsData.reduce((s: number, i: any) => s + i.precoTotal, 0),
-        clienteId: Number(osData.clienteId),
-        veiculoId: Number(osData.veiculoId),
-        itens: itemsData.length ? { create: itemsData } : undefined,
+        number: (last?.number || 0) + 1,
+        totalAmount: itemsData.reduce((s: number, i: any) => s + i.totalPrice, 0),
+        clientId: Number(osData.clientId),
+        vehicleId: Number(osData.vehicleId),
+        items: itemsData.length ? { create: itemsData } : undefined,
       },
       include: osInclude,
     });
-    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'OrdemServico', os.id, `OS #${os.numero}`);
+    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'OrdemServico', os.id, `OS #${os.number}`);
     res.json(os);
   } catch (e) { console.error(e); res.status(500).json({ message: 'Erro ao criar OS' }); }
 });
@@ -544,21 +544,21 @@ app.get('/api/os/:id', tenantAuth, async (req: AuthRequest, res) => {
 app.put('/api/os/:id', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    const { itens, cliente, veiculo, criadoEm, atualizadoEm, id, numero, ...osData } = req.body;
-    const itemsData = (itens || []).map(toItemData);
-    await (prisma as any).itemOrdem.deleteMany({ where: { ordemServicoId: Number(req.params.id) } });
+    const { items, client, vehicle, createdAt, updatedAt, id, number, ...osData } = req.body;
+    const itemsData = (items || []).map(toItemData);
+    await (prisma as any).itemOrdem.deleteMany({ where: { orderId: Number(req.params.id) } });
     const os = await (prisma as any).ordemServico.update({
       where: { id: Number(req.params.id) },
       data: {
         ...osData,
-        valorTotal: itemsData.reduce((s: number, i: any) => s + i.precoTotal, 0),
-        clienteId: Number(osData.clienteId),
-        veiculoId: Number(osData.veiculoId),
-        itens: itemsData.length ? { create: itemsData } : undefined,
+        totalAmount: itemsData.reduce((s: number, i: any) => s + i.totalPrice, 0),
+        clientId: Number(osData.clientId),
+        vehicleId: Number(osData.vehicleId),
+        items: itemsData.length ? { create: itemsData } : undefined,
       },
       include: osInclude,
     });
-    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'OrdemServico', os.id, `OS #${os.numero}`);
+    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'OrdemServico', os.id, `OS #${os.number}`);
     res.json(os);
   } catch (e) { console.error(e); res.status(500).json({ message: 'Erro ao atualizar OS' }); }
 });
@@ -578,11 +578,11 @@ app.get('/api/stats', tenantAuth, async (req: AuthRequest, res) => {
     const prisma = getTenantPrisma(req.user!.cnpj!);
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const [openBudgets, completedOs, pendingAuth, activeVehicles, recentOs] = await Promise.all([
-      (prisma as any).ordemServico.count({ where: { tipo: 'BUDGET', status: 'OPEN' } }),
-      (prisma as any).ordemServico.count({ where: { tipo: 'OS', status: 'COMPLETED', data: { gte: startOfMonth } } }),
+      (prisma as any).ordemServico.count({ where: { type: 'BUDGET', status: 'OPEN' } }),
+      (prisma as any).ordemServico.count({ where: { type: 'OS', status: 'COMPLETED', date: { gte: startOfMonth } } }),
       (prisma as any).ordemServico.count({ where: { status: 'WAITING' } }),
-      (prisma as any).ordemServico.count({ where: { tipo: 'OS', status: { in: ['OPEN', 'IN_PROGRESS'] } } }),
-      (prisma as any).ordemServico.findMany({ take: 6, orderBy: { criadoEm: 'desc' }, include: { cliente: true, veiculo: true } }),
+      (prisma as any).ordemServico.count({ where: { type: 'OS', status: { in: ['OPEN', 'IN_PROGRESS'] } } }),
+      (prisma as any).ordemServico.findMany({ take: 6, orderBy: { createdAt: 'desc' }, include: { client: true, vehicle: true } }),
     ]);
     res.json({ openBudgets, completedOs, pendingAuth, activeVehicles, recentOs });
   } catch { res.status(500).json({ message: 'Erro ao buscar estatísticas' }); }
@@ -592,8 +592,8 @@ app.get('/api/stats', tenantAuth, async (req: AuthRequest, res) => {
 app.get('/api/technicians', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    const list = await (prisma as any).tecnico.findMany({ orderBy: { nome: 'asc' } });
-    res.json(list.map((t: any) => ({ ...t, senhaHash: undefined })));
+    const list = await (prisma as any).tecnico.findMany({ orderBy: { name: 'asc' } });
+    res.json(list.map((t: any) => ({ ...t, passwordHash: undefined })));
   } catch { res.status(500).json({ message: 'Erro ao buscar técnicos' }); }
 });
 
@@ -603,10 +603,10 @@ app.post('/api/technicians', tenantAuth, async (req: AuthRequest, res) => {
     const { password, ...data } = req.body;
     if (!password) { res.status(400).json({ message: 'Senha obrigatória' }); return; }
     const tech = await (prisma as any).tecnico.create({
-      data: { ...data, senhaHash: await bcrypt.hash(password, 10) },
+      data: { ...data, passwordHash: await bcrypt.hash(password, 10) },
     });
-    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'Tecnico', tech.id, `Usuário: ${tech.usuario}`);
-    res.json({ ...tech, senhaHash: undefined });
+    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'Tecnico', tech.id, `Usuário: ${tech.username}`);
+    res.json({ ...tech, passwordHash: undefined });
   } catch (e: any) {
     if (e.code === 'P2002') { res.status(400).json({ message: 'Usuário já cadastrado' }); return; }
     res.status(500).json({ message: 'Erro ao criar técnico' });
@@ -616,12 +616,12 @@ app.post('/api/technicians', tenantAuth, async (req: AuthRequest, res) => {
 app.put('/api/technicians/:id', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    const { password, senhaHash: _ph, itensOrdem, logsAuditoria, criadoEm, atualizadoEm, id, ...data } = req.body;
+    const { password, passwordHash: _ph, items, auditLogs, createdAt, updatedAt, id, ...data } = req.body;
     const updateData: any = { ...data };
-    if (password) updateData.senhaHash = await bcrypt.hash(password, 10);
+    if (password) updateData.passwordHash = await bcrypt.hash(password, 10);
     const tech = await (prisma as any).tecnico.update({ where: { id: Number(req.params.id) }, data: updateData });
-    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'Tecnico', tech.id, `Usuário: ${tech.usuario}`);
-    res.json({ ...tech, senhaHash: undefined });
+    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'Tecnico', tech.id, `Usuário: ${tech.username}`);
+    res.json({ ...tech, passwordHash: undefined });
   } catch (e: any) {
     if (e.code === 'P2002') { res.status(400).json({ message: 'Usuário já cadastrado' }); return; }
     res.status(500).json({ message: 'Erro ao atualizar técnico' });
@@ -633,9 +633,9 @@ app.delete('/api/technicians/:id', tenantAuth, async (req: AuthRequest, res) => 
     const prisma = getTenantPrisma(req.user!.cnpj!);
     const tech = await (prisma as any).tecnico.update({
       where: { id: Number(req.params.id) },
-      data: { ativo: false },
+      data: { active: false },
     });
-    await registrarAuditoria(prisma, req.user!.id, 'DELETE', 'Tecnico', tech.id, `Desativado: ${tech.usuario}`);
+    await registrarAuditoria(prisma, req.user!.id, 'DELETE', 'Tecnico', tech.id, `Desativado: ${tech.username}`);
     res.json({ success: true });
   } catch { res.status(500).json({ message: 'Erro ao desativar técnico' }); }
 });
@@ -644,7 +644,7 @@ app.delete('/api/technicians/:id', tenantAuth, async (req: AuthRequest, res) => 
 app.get('/api/catalog', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    res.json(await (prisma as any).itemCatalogo.findMany({ orderBy: { descricao: 'asc' } }));
+    res.json(await (prisma as any).itemCatalogo.findMany({ orderBy: { description: 'asc' } }));
   } catch { res.status(500).json({ message: 'Erro ao buscar catálogo' }); }
 });
 
@@ -652,7 +652,7 @@ app.post('/api/catalog', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
     const item = await (prisma as any).itemCatalogo.create({ data: req.body });
-    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'ItemCatalogo', item.id, `Item: ${item.descricao}`);
+    await registrarAuditoria(prisma, req.user!.id, 'CREATE', 'ItemCatalogo', item.id, `Item: ${item.description}`);
     res.json(item);
   } catch { res.status(500).json({ message: 'Erro ao criar item' }); }
 });
@@ -660,9 +660,9 @@ app.post('/api/catalog', tenantAuth, async (req: AuthRequest, res) => {
 app.put('/api/catalog/:id', tenantAuth, async (req: AuthRequest, res) => {
   try {
     const prisma = getTenantPrisma(req.user!.cnpj!);
-    const { id, criadoEm, atualizadoEm, ...data } = req.body;
+    const { id, createdAt, updatedAt, ...data } = req.body;
     const item = await (prisma as any).itemCatalogo.update({ where: { id: Number(req.params.id) }, data });
-    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'ItemCatalogo', item.id, `Item: ${item.descricao}`);
+    await registrarAuditoria(prisma, req.user!.id, 'UPDATE', 'ItemCatalogo', item.id, `Item: ${item.description}`);
     res.json(item);
   } catch { res.status(500).json({ message: 'Erro ao atualizar item' }); }
 });

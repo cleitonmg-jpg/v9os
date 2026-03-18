@@ -13,7 +13,6 @@ export const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       await login(form.username, form.password, form.cnpj || undefined);
