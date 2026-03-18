@@ -76,6 +76,20 @@ export interface ServiceItem {
   updatedAt: string;
 }
 
+export interface Empresa {
+  id: number;
+  nome: string;
+  cnpj: string;
+  endereco?: string;
+  telefone?: string;
+  email?: string;
+  observacao?: string;
+  ativo: boolean;
+  data_cadastro: string;
+  banco_dados: string;
+  usuario_admin: string;
+}
+
 export interface Stats {
   openBudgets: number;
   completedOs: number;
