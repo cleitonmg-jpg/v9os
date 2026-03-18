@@ -661,7 +661,7 @@ const __dirname  = path.dirname(__filename);
 const distPath   = path.join(__dirname, '../dist');
 
 app.use(express.static(distPath));
-app.get('*', (_req: Request, res: Response) => {
+app.get('/{*path}', (_req: Request, res: Response) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
