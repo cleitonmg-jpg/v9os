@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "prisma generate && tsc && vite build",
     "preview": "vite preview",
     "server": "tsx watch server/index.ts",
-    "start": "tsx server/index.ts",
+    "start": "node scripts/init_master_db.cjs && tsx server/index.ts",
     "db:migrate": "prisma migrate dev",
     "db:seed": "node prisma/seed.cjs",
     "db:studio": "prisma studio",

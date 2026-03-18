@@ -3,121 +3,134 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
-model Technician {
-  id           Int       @id @default(autoincrement())
-  username     String    @unique
-  name         String
-  passwordHash String
-  role         String    @default("technician") // technician, admin
-  active       Boolean   @default(true)
+model Tecnico {
+  id            Int            @id @default(autoincrement())
+  usuario       String         @unique
+  nome          String
+  senhaHash     String
+  cargo         String         @default("technician")
+  ativo         Boolean        @default(true)
 
-  osItems      OSItem[]
-  auditLogs    AuditLog[]
+  itensOrdem    ItemOrdem[]
+  logsAuditoria LogAuditoria[]
 
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  criadoEm     DateTime       @default(now())
+  atualizadoEm DateTime       @updatedAt
+
+  @@map("tecnicos")
 }
 
-model Client {
-  id        Int        @id @default(autoincrement())
-  name      String
-  cpfCnpj   String?    @unique
-  phone     String
-  email     String?
-  address   String?
+model Cliente {
+  id            Int            @id @default(autoincrement())
+  nome          String
+  cpfCnpj       String?        @unique
+  telefone      String
+  email         String?
+  endereco      String?
 
-  vehicles  Vehicle[]
-  budgets   OSBudget[]
+  veiculos      Veiculo[]
+  ordensServico OrdemServico[]
 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  criadoEm     DateTime       @default(now())
+  atualizadoEm DateTime       @updatedAt
+
+  @@map("clientes")
 }
 
-model Vehicle {
-  id        Int        @id @default(autoincrement())
-  plate     String     @unique
-  brand     String
-  model     String
-  year      Int
-  color     String
-  chassis   String?
-  mileage   Int
+model Veiculo {
+  id            Int            @id @default(autoincrement())
+  placa         String         @unique
+  marca         String
+  modelo        String
+  ano           Int
+  cor           String
+  chassi        String?
+  quilometragem Int
 
-  clientId  Int
-  client    Client     @relation(fields: [clientId], references: [id])
+  clienteId     Int
+  cliente       Cliente        @relation(fields: [clienteId], references: [id])
 
-  budgets   OSBudget[]
+  ordensServico OrdemServico[]
 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  criadoEm     DateTime       @default(now())
+  atualizadoEm DateTime       @updatedAt
+
+  @@map("veiculos")
 }
 
-model OSBudget {
-  id             Int       @id @default(autoincrement())
-  number         Int       @unique
-  type           String    @default("BUDGET") // BUDGET or OS
-  status         String    @default("OPEN") // OPEN, IN_PROGRESS, WAITING, COMPLETED, CANCELLED
-  date           DateTime  @default(now())
+model OrdemServico {
+  id              Int         @id @default(autoincrement())
+  numero          Int         @unique
+  tipo            String      @default("BUDGET")
+  status          String      @default("OPEN")
+  data            DateTime    @default(now())
 
-  clientId       Int
-  client         Client    @relation(fields: [clientId], references: [id])
+  clienteId       Int
+  cliente         Cliente     @relation(fields: [clienteId], references: [id])
 
-  vehicleId      Int
-  vehicle        Vehicle   @relation(fields: [vehicleId], references: [id])
+  veiculoId       Int
+  veiculo         Veiculo     @relation(fields: [veiculoId], references: [id])
 
-  defectReported String?
-  totalAmount    Float     @default(0)
-  notes          String?
+  defeitoRelatado String?
+  valorTotal      Float       @default(0)
+  observacoes     String?
 
-  items          OSItem[]
+  itens           ItemOrdem[]
 
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  criadoEm     DateTime      @default(now())
+  atualizadoEm DateTime      @updatedAt
+
+  @@map("ordens_servico")
 }
 
-model OSItem {
-  id           Int         @id @default(autoincrement())
-  osBudgetId   Int
-  osBudget     OSBudget    @relation(fields: [osBudgetId], references: [id], onDelete: Cascade)
+model ItemOrdem {
+  id             Int          @id @default(autoincrement())
+  ordemServicoId Int
+  ordemServico   OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
 
-  description  String
-  quantity     Float       @default(1)
-  unitPrice    Float
-  totalPrice   Float
-  type         String      @default("SERVICE") // SERVICE or PART
+  descricao      String
+  quantidade     Float        @default(1)
+  precoUnitario  Float
+  precoTotal     Float
+  tipo           String       @default("SERVICE")
 
-  technicianId Int?
-  technician   Technician? @relation(fields: [technicianId], references: [id], onDelete: SetNull)
+  tecnicoId      Int?
+  tecnico        Tecnico?     @relation(fields: [tecnicoId], references: [id], onDelete: SetNull)
 
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  criadoEm     DateTime       @default(now())
+  atualizadoEm DateTime       @updatedAt
+
+  @@map("itens_ordem")
 }
 
-model AuditLog {
-  id           Int        @id @default(autoincrement())
-  technicianId Int
-  technician   Technician @relation(fields: [technicianId], references: [id])
+model LogAuditoria {
+  id         Int      @id @default(autoincrement())
+  tecnicoId  Int
+  tecnico    Tecnico  @relation(fields: [tecnicoId], references: [id])
 
-  action       String
-  entity       String
-  entityId     Int
-  details      String?
-  timestamp    DateTime   @default(now())
+  acao       String
+  entidade   String
+  entidadeId Int
+  detalhes   String?
+  dataHora   DateTime @default(now())
+
+  @@map("logs_auditoria")
 }
 
-model ServiceItem {
-  id          Int      @id @default(autoincrement())
-  description String
-  type        String   @default("SERVICE") // SERVICE or PART
-  costPrice   Float    @default(0)
-  unitPrice   Float    @default(0)
-  stock       Int      @default(0)
-  active      Boolean  @default(true)
+model ItemCatalogo {
+  id            Int      @id @default(autoincrement())
+  descricao     String
+  tipo          String   @default("SERVICE")
+  precoCusto    Float    @default(0)
+  precoUnitario Float    @default(0)
+  estoque       Int      @default(0)
+  ativo         Boolean  @default(true)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("itens_catalogo")
 }
-
