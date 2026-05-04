@@ -106,7 +106,7 @@ export const Clients = () => {
                   <td className="px-6 py-4 text-sm text-slate-500">{c.email || '—'}</td>
                   <td className="px-6 py-4 text-sm text-slate-600">{c.vehicles?.length || 0}</td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-end gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-petroleum-600 hover:bg-petroleum-50 rounded-lg">
                         <Pencil className="w-4 h-4" />
                       </button>
