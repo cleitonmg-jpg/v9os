@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Plus, Pencil, Trash2, FileText, ClipboardList, ChevronDown, X, MessageCircle, BookOpen } from 'lucide-react';
 import api from '../lib/api';
 import { Modal } from '../components/Modal';
-import type { OSBudget, Client, Vehicle, Technician, OSItem, ServiceItem } from '../types';
+import type { OSBudget, Client, Vehicle, Technician, OSItem, ServiceItem, Empresa } from '../types';
 import { OsPdf } from '../components/OsPdf';
 
 interface Props { type: 'BUDGET' | 'OS'; }
@@ -33,6 +33,7 @@ export const OsPage: React.FC<Props> = ({ type }) => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [technicians, setTechnicians] = useState<Technician[]>([]);
   const [catalog, setCatalog] = useState<ServiceItem[]>([]);
+  const [empresa, setEmpresa] = useState<Partial<Empresa> | null>(null);
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState<'create' | 'edit' | null>(null);
   const [pdfItem, setPdfItem] = useState<OSBudget | null>(null);
@@ -45,12 +46,14 @@ export const OsPage: React.FC<Props> = ({ type }) => {
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
-    const [os, cl, ve, te, cat] = await Promise.all([
+    const [os, cl, ve, te, cat, emp] = await Promise.all([
       api.get('/os'), api.get('/clients'), api.get('/vehicles'), api.get('/technicians'), api.get('/catalog'),
+      api.get('/empresa').catch(() => ({ data: null })),
     ]);
     setList(os.data.filter((o: OSBudget) => o.type === type));
     setClients(cl.data); setVehicles(ve.data); setTechnicians(te.data);
     setCatalog(cat.data.filter((i: ServiceItem) => i.active));
+    if (emp.data) setEmpresa(emp.data);
   }, [type]);
 
   useEffect(() => { load(); }, [load]);
@@ -207,7 +210,7 @@ export const OsPage: React.FC<Props> = ({ type }) => {
       {/* PDF Modal */}
       {pdfItem && (
         <Modal title={`${type === 'BUDGET' ? 'Orçamento' : 'OS'} #${String(pdfItem.number).padStart(4, '0')}`} onClose={() => setPdfItem(null)} size="xl">
-          <OsPdf os={pdfItem} />
+          <OsPdf os={pdfItem} empresa={empresa} />
         </Modal>
       )}
 

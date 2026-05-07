@@ -405,6 +405,39 @@ const tenantAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
   });
 };
 
+// ── Empresa (perfil da própria empresa tenant) ────────────────────────────────
+
+app.get('/api/empresa', tenantAuth, async (req: AuthRequest, res) => {
+  try {
+    const rows = await masterDb.execute({
+      sql: 'SELECT id, nome, cnpj, endereco, telefone, email, cep, inscricao_estadual, contato, observacao FROM empresas WHERE cnpj = ?',
+      args: [req.user!.cnpj!],
+    });
+    if (rows.rows.length === 0) { res.status(404).json({ message: 'Empresa não encontrada' }); return; }
+    res.json(rows.rows[0]);
+  } catch (e) {
+    console.error('[GET /api/empresa]', e);
+    res.status(500).json({ message: 'Erro ao buscar dados da empresa' });
+  }
+});
+
+app.put('/api/empresa', tenantAuth, async (req: AuthRequest, res) => {
+  try {
+    const { nome, endereco, telefone, email, cep, inscricao_estadual, contato, observacao } = req.body;
+    if (!nome) { res.status(400).json({ message: 'Nome é obrigatório' }); return; }
+    await masterDb.execute({
+      sql: 'UPDATE empresas SET nome=?, endereco=?, telefone=?, email=?, cep=?, inscricao_estadual=?, contato=?, observacao=? WHERE cnpj=?',
+      args: [nome, endereco || null, telefone || null, email || null,
+             cep || null, inscricao_estadual || null, contato || null, observacao || null,
+             req.user!.cnpj!],
+    });
+    res.json({ message: 'Dados atualizados com sucesso' });
+  } catch (e) {
+    console.error('[PUT /api/empresa]', e);
+    res.status(500).json({ message: 'Erro ao atualizar dados da empresa' });
+  }
+});
+
 // ── Clients ────────────────────────────────────────────────────────────────────
 app.get('/api/clients', tenantAuth, async (req: AuthRequest, res) => {
   try {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Car, FileText, ClipboardList, LogOut, Wrench, BookOpen, X } from 'lucide-react';
+import { LayoutDashboard, Users, Car, FileText, ClipboardList, LogOut, Wrench, BookOpen, X, Building2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const menuItems = [
@@ -19,7 +19,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
 
   return (
@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-2 space-y-0.5">
+        <nav className="flex-1 px-4 py-2 space-y-0.5 overflow-y-auto">
           {menuItems.map((item) => {
             const active = location.pathname === item.path;
             return (
@@ -74,6 +74,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </Link>
             );
           })}
+
+          {/* Minha Empresa — somente admin */}
+          {user?.role === 'admin' && (() => {
+            const active = location.pathname === '/settings';
+            return (
+              <Link
+                to="/settings"
+                onClick={onClose}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${
+                  active
+                    ? 'bg-petroleum-50 text-petroleum-700 font-semibold'
+                    : 'text-slate-600 hover:bg-petroleum-50 hover:text-petroleum-700'
+                }`}
+              >
+                <Building2 className={`w-5 h-5 transition-transform ${active ? 'text-petroleum-600' : 'group-hover:scale-110'}`} />
+                <span className="font-medium text-sm">Minha Empresa</span>
+                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-petroleum-500" />}
+              </Link>
+            );
+          })()}
         </nav>
 
         <div className="p-4 border-t border-slate-100">

@@ -10,6 +10,7 @@ import { Vehicles } from './pages/Vehicles';
 import { Technicians } from './pages/Technicians';
 import { OsPage } from './pages/OsPage';
 import { Catalog } from './pages/Catalog';
+import { CompanySettings } from './pages/CompanySettings';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useAuth();
@@ -36,6 +37,7 @@ function App() {
                 <Route path="/vehicles" element={<Vehicles />} />
                 <Route path="/technicians" element={<Technicians />} />
                 <Route path="/catalog" element={<Catalog />} />
+                <Route path="/settings" element={<CompanySettings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>

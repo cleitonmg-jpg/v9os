@@ -1,6 +1,6 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, PDFViewer, Font } from '@react-pdf/renderer';
-import type { OSBudget } from '../types';
+import { Document, Page, Text, View, StyleSheet, PDFViewer } from '@react-pdf/renderer';
+import type { OSBudget, Empresa } from '../types';
 
 const fmtCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const fmtDate = (d: string) => new Date(d).toLocaleDateString('pt-BR');
@@ -42,153 +42,165 @@ const STATUS_LABELS: Record<string, string> = {
   COMPLETED: 'Concluído', CANCELLED: 'Cancelado',
 };
 
-interface Props { os: OSBudget; }
+interface Props { os: OSBudget; empresa?: Partial<Empresa> | null; }
 
-const OsDocument: React.FC<Props> = ({ os }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      {/* Header */}
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={styles.companyName}>V9 OS</Text>
-          <Text style={styles.companyInfo}>V9 INFORMÁTICA LTDA</Text>
-          <Text style={styles.companyInfo}>(37) 4141-0341</Text>
-        </View>
-        <View>
-          <Text style={styles.docTitle}>{os.type === 'BUDGET' ? 'ORÇAMENTO' : 'ORDEM DE SERVIÇO'}</Text>
-          <Text style={styles.docNumber}>#{String(os.number).padStart(4, '0')}</Text>
-          <Text style={{ fontSize: 8, color: '#64748b', textAlign: 'right', marginTop: 2 }}>{fmtDate(os.date)}</Text>
-          <Text style={{ fontSize: 8, color: '#356682', textAlign: 'right', fontFamily: 'Helvetica-Bold', marginTop: 2 }}>
-            {STATUS_LABELS[os.status] || os.status}
-          </Text>
-        </View>
-      </View>
+const OsDocument: React.FC<Props> = ({ os, empresa }) => {
+  const nomeEmpresa = empresa?.nome || 'Oficina';
+  const telefone = empresa?.telefone || '';
+  const endereco = empresa?.endereco || '';
+  const cnpj = empresa?.cnpj || '';
+  const email = empresa?.email || '';
 
-      {/* Client & Vehicle */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Dados do Cliente & Veículo</Text>
-        <View style={styles.row2}>
-          <View style={styles.field}>
-            <Text style={styles.label}>Cliente</Text>
-            <Text style={styles.value}>{os.client?.name || '—'}</Text>
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>CPF / CNPJ</Text>
-            <Text style={styles.value}>{os.client?.cpfCnpj || '—'}</Text>
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Telefone</Text>
-            <Text style={styles.value}>{os.client?.phone || '—'}</Text>
-          </View>
-        </View>
-        <View style={[styles.row2, { marginTop: 8 }]}>
-          <View style={styles.field}>
-            <Text style={styles.label}>Veículo</Text>
-            <Text style={styles.value}>{os.vehicle ? `${os.vehicle.brand} ${os.vehicle.model}` : '—'}</Text>
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Placa</Text>
-            <Text style={styles.value}>{os.vehicle?.plate || '—'}</Text>
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Ano / Cor</Text>
-            <Text style={styles.value}>{os.vehicle ? `${os.vehicle.year} / ${os.vehicle.color}` : '—'}</Text>
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Quilometragem</Text>
-            <Text style={styles.value}>{os.vehicle ? `${os.vehicle.mileage.toLocaleString()} km` : '—'}</Text>
-          </View>
-        </View>
-      </View>
+  const footerParts = [nomeEmpresa, telefone, email].filter(Boolean);
 
-      {/* Defects */}
-      {os.type === 'OS' && os.defectReported && (
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.companyName}>{nomeEmpresa}</Text>
+            {cnpj ? <Text style={styles.companyInfo}>CNPJ: {cnpj}</Text> : null}
+            {endereco ? <Text style={styles.companyInfo}>{endereco}</Text> : null}
+            {telefone ? <Text style={styles.companyInfo}>{telefone}</Text> : null}
+            {email ? <Text style={styles.companyInfo}>{email}</Text> : null}
+          </View>
+          <View>
+            <Text style={styles.docTitle}>{os.type === 'BUDGET' ? 'ORÇAMENTO' : 'ORDEM DE SERVIÇO'}</Text>
+            <Text style={styles.docNumber}>#{String(os.number).padStart(4, '0')}</Text>
+            <Text style={{ fontSize: 8, color: '#64748b', textAlign: 'right', marginTop: 2 }}>{fmtDate(os.date)}</Text>
+            <Text style={{ fontSize: 8, color: '#356682', textAlign: 'right', fontFamily: 'Helvetica-Bold', marginTop: 2 }}>
+              {STATUS_LABELS[os.status] || os.status}
+            </Text>
+          </View>
+        </View>
+
+        {/* Client & Vehicle */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Defeitos Relatados</Text>
-          <View style={styles.defectBox}>
-            <Text style={{ fontSize: 9, color: '#713f12' }}>{os.defectReported}</Text>
-          </View>
-        </View>
-      )}
-
-      {/* Items ou Recebimento */}
-      {os.items.length > 0 ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Serviços & Peças</Text>
-          <View style={styles.tableHeader}>
-            <Text style={[styles.th, styles.col1]}>Descrição</Text>
-            <Text style={[styles.th, styles.col2]}>Tipo</Text>
-            <Text style={[styles.th, styles.col3]}>Qtd</Text>
-            <Text style={[styles.th, styles.col4]}>Vlr Unit.</Text>
-            <Text style={[styles.th, styles.col5]}>Total</Text>
-            {os.type === 'OS' && <Text style={[styles.th, styles.col6]}>Técnico</Text>}
-          </View>
-          {os.items.map((item, i) => (
-            <View key={i} style={styles.tableRow}>
-              <Text style={[styles.td, styles.col1]}>{item.description}</Text>
-              <Text style={[styles.td, styles.col2]}>{item.type === 'SERVICE' ? 'Serviço' : 'Peça'}</Text>
-              <Text style={[styles.td, styles.col3]}>{item.quantity}</Text>
-              <Text style={[styles.td, styles.col4]}>{fmtCurrency(item.unitPrice)}</Text>
-              <Text style={[styles.td, styles.col5]}>{fmtCurrency(item.totalPrice)}</Text>
-              {os.type === 'OS' && <Text style={[styles.td, styles.col6]}>{item.technician?.name || '—'}</Text>}
+          <Text style={styles.sectionTitle}>Dados do Cliente & Veículo</Text>
+          <View style={styles.row2}>
+            <View style={styles.field}>
+              <Text style={styles.label}>Cliente</Text>
+              <Text style={styles.value}>{os.client?.name || '—'}</Text>
             </View>
-          ))}
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>TOTAL</Text>
-            <Text style={styles.totalValue}>{fmtCurrency(os.totalAmount)}</Text>
+            <View style={styles.field}>
+              <Text style={styles.label}>CPF / CNPJ</Text>
+              <Text style={styles.value}>{os.client?.cpfCnpj || '—'}</Text>
+            </View>
+            <View style={styles.field}>
+              <Text style={styles.label}>Telefone</Text>
+              <Text style={styles.value}>{os.client?.phone || '—'}</Text>
+            </View>
+          </View>
+          <View style={[styles.row2, { marginTop: 8 }]}>
+            <View style={styles.field}>
+              <Text style={styles.label}>Veículo</Text>
+              <Text style={styles.value}>{os.vehicle ? `${os.vehicle.brand} ${os.vehicle.model}` : '—'}</Text>
+            </View>
+            <View style={styles.field}>
+              <Text style={styles.label}>Placa</Text>
+              <Text style={styles.value}>{os.vehicle?.plate || '—'}</Text>
+            </View>
+            <View style={styles.field}>
+              <Text style={styles.label}>Ano / Cor</Text>
+              <Text style={styles.value}>{os.vehicle ? `${os.vehicle.year} / ${os.vehicle.color}` : '—'}</Text>
+            </View>
+            <View style={styles.field}>
+              <Text style={styles.label}>Quilometragem</Text>
+              <Text style={styles.value}>{os.vehicle ? `${os.vehicle.mileage.toLocaleString()} km` : '—'}</Text>
+            </View>
           </View>
         </View>
-      ) : (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Comprovante de Recebimento</Text>
-          <View style={{ backgroundColor: '#f1f7f9', borderRadius: 4, padding: 12, border: '1px solid #bdd9e4' }}>
-            <Text style={{ fontSize: 9, color: '#293d4e', lineHeight: 1.6 }}>
-              Declaro que entreguei o veículo {os.vehicle ? `${os.vehicle.brand} ${os.vehicle.model}, placa ${os.vehicle.plate}, ano ${os.vehicle.year}` : 'identificado acima'}, para avaliação e serviços na V9 INFORMÁTICA LTDA, nas condições e com os defeitos descritos neste documento.
-            </Text>
-            <Text style={{ fontSize: 9, color: '#293d4e', marginTop: 8 }}>
-              Data de entrada: {fmtDate(os.date)}
-            </Text>
-          </View>
-        </View>
-      )}
 
-      {/* Notes */}
-      {os.notes && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Observações</Text>
-          <View style={styles.notesBox}>
-            <Text style={{ fontSize: 9, color: '#475569' }}>{os.notes}</Text>
+        {/* Defects */}
+        {os.type === 'OS' && os.defectReported && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Defeitos Relatados</Text>
+            <View style={styles.defectBox}>
+              <Text style={{ fontSize: 9, color: '#713f12' }}>{os.defectReported}</Text>
+            </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {/* Signature — sempre visível na OS */}
-      {os.type === 'OS' && (
-        <View style={{ marginTop: 40, flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <View style={{ height: 36 }} />
-            <View style={{ borderTop: '1px solid #94a3b8', width: 180, marginBottom: 4 }} />
-            <Text style={{ fontSize: 8, color: '#64748b' }}>Assinatura do Cliente</Text>
-            <Text style={{ fontSize: 7, color: '#94a3b8', marginTop: 2 }}>{os.client?.name || ''}</Text>
+        {/* Items ou Recebimento */}
+        {os.items.length > 0 ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Serviços & Peças</Text>
+            <View style={styles.tableHeader}>
+              <Text style={[styles.th, styles.col1]}>Descrição</Text>
+              <Text style={[styles.th, styles.col2]}>Tipo</Text>
+              <Text style={[styles.th, styles.col3]}>Qtd</Text>
+              <Text style={[styles.th, styles.col4]}>Vlr Unit.</Text>
+              <Text style={[styles.th, styles.col5]}>Total</Text>
+              {os.type === 'OS' && <Text style={[styles.th, styles.col6]}>Técnico</Text>}
+            </View>
+            {os.items.map((item, i) => (
+              <View key={i} style={styles.tableRow}>
+                <Text style={[styles.td, styles.col1]}>{item.description}</Text>
+                <Text style={[styles.td, styles.col2]}>{item.type === 'SERVICE' ? 'Serviço' : 'Peça'}</Text>
+                <Text style={[styles.td, styles.col3]}>{item.quantity}</Text>
+                <Text style={[styles.td, styles.col4]}>{fmtCurrency(item.unitPrice)}</Text>
+                <Text style={[styles.td, styles.col5]}>{fmtCurrency(item.totalPrice)}</Text>
+                {os.type === 'OS' && <Text style={[styles.td, styles.col6]}>{item.technician?.name || '—'}</Text>}
+              </View>
+            ))}
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>TOTAL</Text>
+              <Text style={styles.totalValue}>{fmtCurrency(os.totalAmount)}</Text>
+            </View>
           </View>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <View style={{ height: 36 }} />
-            <View style={{ borderTop: '1px solid #94a3b8', width: 180, marginBottom: 4 }} />
-            <Text style={{ fontSize: 8, color: '#64748b' }}>Responsável pela Oficina</Text>
-            <Text style={{ fontSize: 7, color: '#94a3b8', marginTop: 2 }}>V9 INFORMÁTICA LTDA</Text>
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Comprovante de Recebimento</Text>
+            <View style={{ backgroundColor: '#f1f7f9', borderRadius: 4, padding: 12, border: '1px solid #bdd9e4' }}>
+              <Text style={{ fontSize: 9, color: '#293d4e', lineHeight: 1.6 }}>
+                Declaro que entreguei o veículo {os.vehicle ? `${os.vehicle.brand} ${os.vehicle.model}, placa ${os.vehicle.plate}, ano ${os.vehicle.year}` : 'identificado acima'}, para avaliação e serviços em {nomeEmpresa}, nas condições e com os defeitos descritos neste documento.
+              </Text>
+              <Text style={{ fontSize: 9, color: '#293d4e', marginTop: 8 }}>
+                Data de entrada: {fmtDate(os.date)}
+              </Text>
+            </View>
           </View>
-        </View>
-      )}
+        )}
 
-      <Text style={styles.footer}>
-        V9 INFORMÁTICA LTDA · (37) 4141-0341 · Documento gerado em {fmtDate(new Date().toISOString())}
-      </Text>
-    </Page>
-  </Document>
-);
+        {/* Notes */}
+        {os.notes && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Observações</Text>
+            <View style={styles.notesBox}>
+              <Text style={{ fontSize: 9, color: '#475569' }}>{os.notes}</Text>
+            </View>
+          </View>
+        )}
 
-export const OsPdf: React.FC<Props> = ({ os }) => (
+        {/* Assinaturas — apenas na OS */}
+        {os.type === 'OS' && (
+          <View style={{ marginTop: 40, flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <View style={{ height: 36 }} />
+              <View style={{ borderTop: '1px solid #94a3b8', width: 180, marginBottom: 4 }} />
+              <Text style={{ fontSize: 8, color: '#64748b' }}>Assinatura do Cliente</Text>
+              <Text style={{ fontSize: 7, color: '#94a3b8', marginTop: 2 }}>{os.client?.name || ''}</Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <View style={{ height: 36 }} />
+              <View style={{ borderTop: '1px solid #94a3b8', width: 180, marginBottom: 4 }} />
+              <Text style={{ fontSize: 8, color: '#64748b' }}>Responsável pela Oficina</Text>
+              <Text style={{ fontSize: 7, color: '#94a3b8', marginTop: 2 }}>{nomeEmpresa}</Text>
+            </View>
+          </View>
+        )}
+
+        <Text style={styles.footer}>
+          {footerParts.join(' · ')} · Documento gerado em {fmtDate(new Date().toISOString())}
+        </Text>
+      </Page>
+    </Document>
+  );
+};
+
+export const OsPdf: React.FC<Props> = ({ os, empresa }) => (
   <PDFViewer width="100%" height={600} className="rounded-xl border border-slate-200">
-    <OsDocument os={os} />
+    <OsDocument os={os} empresa={empresa} />
   </PDFViewer>
 );
